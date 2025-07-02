@@ -11,7 +11,7 @@ See this as a starting point for discussion rather than a finished product.
 ## Overview
 ### Full page refresh
 Since the early days of the web, developers were seeking ways to work around the "document refresh" experience - having to wait when clicking a link until the next page is brought up.
-Solutions to this problems have prolifirated in the shape of JS-based "Single page applications" (SPAs), and frameworks that make it easier to build such applications.
+Solutions to this problem have proliferated in the shape of JS-based "Single page applications" (SPAs), and frameworks that make it easier to build such applications.
 
 Some newer web platform features such as prerendering improve this experience, however there are many situations where unloading a document and loading a new one is still inferior to keeping the document alive, including all its chat widgets, 3rd party scripts, and so on.
 
