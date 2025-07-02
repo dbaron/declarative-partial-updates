@@ -222,7 +222,7 @@ All they have to do is match their views with URL routes, and then stream the ap
 1. How does this interact with declarative shadow DOM? Can parts of a declarative shadow DOM be streamed in this way?
 1. Interaction with templating proposals such as DOM Parts
 1. Should `<view>` be a regular element in the DOM? Does that prevent it from being part of SVG/MathML/tables etc? Perhaps it should be a set of attributes/processing instruction?
-1. ID refs are notoriously footgunny and it's hard to get them wrong. However, they are the current referencing enabler of the web platform. Perhaps there is some way to go about refs that improves things for other features as well?
+1. ID refs are notoriously footgunny and it's easy to get them wrong. However, they are the current referencing enabler of the web platform. Perhaps there is some way to go about refs that improves things for other features as well?
 
 
 ## Considered Alternatives & Tradeoffs
