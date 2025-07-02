@@ -161,9 +161,9 @@ Loading...
 #### Details of `<template for=... mode...>`
 
 1. The `for` attribute behaves like `<label for>`, pointing to an ID
-2. `mode` can be `replace`, `append` or `prepend`, and be extended in the future to include things like `merge`, `loading` and `error`.
-3. In general, the `<template>` itself does not stay in the DOM, kind of like `<template shadowrootmode>`. However the details of this are TBD.
-5. When a `<template for>` is discovered, its contents are streamed into its target element.
+1. `mode` can be `replace`, `append` or `prepend`, and be extended in the future to include things like `merge`, `loading` and `error`.
+1. In general, the `<template>` itself does not stay in the DOM, kind of like `<template shadowrootmode>`. However the details of this are TBD.
+1. When a `<template for>` is discovered, its contents are streamed into its target element.
  
 This is, in essence, a proposed solution for https://github.com/whatwg/html/issues/2791. 
 
@@ -198,14 +198,14 @@ In an app that contains matching views, the developer does not have to worry abo
 All they have to do is match their views with URL routes, and then stream the appropriate new content wrapped in `<template for=... mode...>` snippets.
 #### Details of `<view>`
 
-2. Multiple views can be present at the same time, and updated together using the same response. The response can be *identical* to a full document navigation response, as long as the view content is wrapped in `<template for>`. 
+1. Multiple views can be present at the same time, and updated together using the same response. The response can be *identical* to a full document navigation response, as long as the view content is wrapped in `<template for>`. 
 1. A `view` would also have lifecycle events to enable developers to fine-tune its behavior using JS.
-3. Declarative view transitions work out of the box.
-4. The “view update” request is identical to the navigation request. Content from the fetched document response is streamed, and added to the view in chunks, like normal HTML streaming.
-5. While streaming content, the `<view>` would get a pseudo-class (:partial?) activated. This pseudo-class can be used in ordinary document content streaming as well, to avoid the visual effect of streaming.
-6. A partial response can include either a full document or just the modified templates, the UA should be able to work with both as valid HTML. 
-7. A `<view>` can have `<template status=”loading|error”>` children and/or matching `<template for= mode=loading|error>` elements, which, if available, get displayed instead of the regular content while new content is loading or if there is an error fetching.
-8. When the pattern stops matching, the view receives a `:deactivated` pseudo-class, and there is a UA style of `view:deactivated (content-visibility: hidden; width: 0; height: 0; interactivity: inert)` that can be overridden by the developer. Also, its contents are not DOM selectable, like a `<template>` element.
+1. Declarative view transitions work out of the box.
+1. The “view update” request is identical to the navigation request. Content from the fetched document response is streamed, and added to the view in chunks, like normal HTML streaming.
+1. While streaming content, the `<view>` would get a pseudo-class (:partial?) activated. This pseudo-class can be used in ordinary document content streaming as well, to avoid the visual effect of streaming.
+1. A partial response can include either a full document or just the modified templates, the UA should be able to work with both as valid HTML. 
+1. A `<view>` can have `<template status=”loading|error”>` children and/or matching `<template for= mode=loading|error>` elements, which, if available, get displayed instead of the regular content while new content is loading or if there is an error fetching.
+1. When the pattern stops matching, the view receives a `:deactivated` pseudo-class, and there is a UA style of `view:deactivated (content-visibility: hidden; width: 0; height: 0; interactivity: inert)` that can be overridden by the developer. Also, its contents are not DOM selectable, like a `<template>` element.
 1. A request for an intercepted partial update contains header information about the views that are about to be updated, and about the fact that it's a partial update.
 
 ## Potential future enhancements
