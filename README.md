@@ -204,7 +204,7 @@ All they have to do is match their views with URL routes, and then stream the ap
 1. The “view update” request is identical to the navigation request. Content from the fetched document response is streamed, and added to the view in chunks, like normal HTML streaming.
 1. While streaming content, the `<view>` would get a pseudo-class (:partial?) activated. This pseudo-class can be used in ordinary document content streaming as well, to avoid the visual effect of streaming.
 1. A partial response can include either a full document or just the modified templates, the UA should be able to work with both as valid HTML. 
-1. A `<view>` can have `<template status=”loading|error”>` children and/or matching `<template for= mode=loading|error>` elements, which, if available, get displayed instead of the regular content while new content is loading or if there is an error fetching.
+1. A `<view>` can have `<template status=loading|error>` children and/or matching `<template for= mode=loading|error>` elements, which, if available, get displayed instead of the regular content while new content is loading or if there is an error fetching.
 1. When the pattern stops matching, the view receives a `:deactivated` pseudo-class, and there is a UA style of `view:deactivated (content-visibility: hidden; width: 0; height: 0; interactivity: inert)` that can be overridden by the developer. Also, its contents are not DOM selectable, like a `<template>` element.
 1. A request for an intercepted partial update contains header information about the views that are about to be updated, and about the fact that it's a partial update.
 
