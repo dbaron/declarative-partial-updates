@@ -147,7 +147,7 @@ It consists of 3 part. The first two stand on their own, and the last one uses t
 Currently, the DOM tree is updated in the order in which its HTML content is received from the network. This is a good architecture for an article to be read linearly, however many modern web apps are not built in that way.
 Often in modern web apps, the layout of the document is present, with parts of it loaded simultaneously or in some asynchronous order, with some loading indicators or a skeleton UI to indicate this progression. 
 
-The proposal here is to extend the `<template>` element with a `for` attributs, that would repurpose it for this type of out-of-order update.
+The proposal here is to extend the `<template>` element with a `for` attribute that would repurpose it for this type of out-of-order update.
 
 ```html
 <!-- initial response -->
