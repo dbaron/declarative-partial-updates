@@ -214,7 +214,7 @@ The proposal here is to make routes a first-class citizen in HTML, and using tha
 1. A `view` can be described by using CSS. It is merely an element that has `display: none` (or `content-visibility: hidden`, details TBD) when the route doesn't match.
    The choice to make it an element makes it clear semantically that this part of the document is an app fragment.
 1. Views can be extended in the future to support a per-view URL ("HTML includes"), and have additional CSS selectors for links that target a particular route.
-1. Multiple views that match the same route can be present at the same time
+1. Multiple views that match the same route can be present at the same time.
 1. The `match` attribute can be bikeshed... perhaps `matchroute`.
 
 ### Part 3: Declarative same-document navigation
@@ -257,12 +257,12 @@ All they have to do is list their routes, declare which parts of their document 
 
 #### Details of declarative interception
 
-1. When a route has a `mode: 'same-document'` clause, navigations to matching destinations would be intercepted. The navigation request would still take place, but only `<template for>` elements from the response would be spliced-streamed into the document.
+1. When a route has a `mode: 'same-document'` (or `itnercept: true` or some such) clause, navigations to matching destinations would be intercepted. The navigation request would still take place, but only `<template for>` elements from the response would be spliced-streamed into the document.
 1. Declarative view transitions work out of the box.
 1. Views matching the old/new route would receive an "unloading" and "loading" state, with appropriate JS events and CSS selectors.
 1. While streaming content, target elements would get a pseudo-class (:partial?) activated. This pseudo-class can be used in ordinary document content streaming as well, to avoid the visual effect of streaming.
 1. A partial response can include either a full document or just the modified templates, the UA should be able to work with both as valid HTML. 
-1. A request for an intercepted partial update contains header information about the views that are about to be updated, and about the fact that it's a partial update.
+1. A request for an intercepted partial update contains header information about the views that are about to be updated, and about the fact that it's a partial update. This allows the response to include only the updated part (though we have to be careful about content-negotation trade-offs).
 
 ## Potential future enhancements
 1. We can consider also supporting 1st-class HTML includes, e.g. with `<view src="...">`. The initial proposal here for `<template for>` allows for this kind of experience without an additional network request with a special signature, by streaming the content in the same document response.
