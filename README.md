@@ -187,7 +187,7 @@ The proposal here is to make routes a first-class citizen in HTML, and using tha
     "movies": { "pattern": { "pathname": "/movies/:movie_id" } },
     "about":  { "pattern": "/about" },
     "home":   { "pattern": ["/home", "/"] }
-  ]
+  }
 </script>
 
 <style>
