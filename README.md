@@ -216,8 +216,6 @@ The proposal here is to make routes a first-class citizen in HTML, and using tha
 1. Views can be extended in the future to support a per-view URL ("HTML includes"), and have additional CSS selectors for links that target a particular route.
 2. Multiple views that match the same route can be present at the same time
 
-## 
-
 ### Part 3: Declarative same-document navigation
 
 Once we gain the ability to stream content into the document, and also declaratively match certain parts of the document to a URL pattern,
