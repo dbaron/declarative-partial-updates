@@ -138,13 +138,16 @@ The approach here is a bit more generic, where the developer decides which parts
 
 ## This Proposal
 The goal of this proposal is to see whether the platform can help with this kind of experience, by introducing composable fragments (views, because the word fragment is used elsewhere...) and declarative partial document updates as a platform (HTML) primitive.
-It consists of two parts, the first one standing on its own and the second one building on top of it.
+It consists of three parts. The first two stand on their own, and the last one uses the first two:
+* Out-of-order streaming ("splice-stream")
+* Route matching
+* Declarative same-document navigations
 
-### Part 1: Declarative partial document updates
+### Part 1: Out-of-order streaming ("splice-stream")
 Currently, the DOM tree is updated in the order in which its HTML content is received from the network. This is a good architecture for an article to be read linearly, however many modern web apps are not built in that way.
 Often in modern web apps, the layout of the document is present, with parts of it loaded simultaneously or in some asynchronous order, with some loading indicators or a skeleton UI to indicate this progression. 
 
-The proposal here is to extend the `<template>` element with a `for` and `mode` attributes, that would repurpose it for this type of out-of-order update.
+The proposal here is to extend the `<template>` element with a `for` attribute that would repurpose it for this type of out-of-order update.
 
 ```html
 <!-- initial response -->
@@ -153,34 +156,90 @@ Loading...
 </section>
 
 <!-- later during the loading process, e.g. when the gallery content is ready -->
-<template for="photo-gallery" mode="replace">
+<template for="photo-gallery">
   ... the actual gallery...
 </template>
 ```
 
-#### Details of `<template for=... mode...>`
+#### Details of `<template for=...>`
 
-1. The `for` attribute behaves like `<label for>`, pointing to an ID
-1. `mode` can be `replace`, `append` or `prepend`, and be extended in the future to include things like `merge`, `loading` and `error`.
-1. In general, the `<template>` itself does not stay in the DOM, kind of like `<template shadowrootmode>`. However the details of this are TBD.
-1. When a `<template for>` is discovered, its contents are streamed into its target element.
- 
+1. The `for` attribute behaves like `<label for>`, pointing to an ID.
+1. When a `<template for>` is discovered, its contents are streamed into its target position.
+1. The template itself is just a DOM directive. It doesn't stay in the DOM after being processed.
+1. Potentially, we can make this template point to a *position* in the DOM rather than an ID, e.g. one or two CSS selectors and replacing everything between them.
+   If we do that, the template does nothing and is discarded if it doesn't have anywhere to stream into.
+
 This is, in essence, a proposed solution for https://github.com/whatwg/html/issues/2791. 
 
-### Part 2: Composable app fragments (views)
+### Part 2: URL matching with views & routes
 
-In addition to being able to declaratively stream content into the document out-of-order, we want to enable a declarative relationship between a fragment of an application and the document's URL.
-Straw man proposal is to do this with a new element called `<view>`, with a `match` attribute that accepts a `URLPattern`, and intercepts matching navigations.
+To effectively match between parts of the document and the state of the app, there is commonly a relationship between the document's URL and active/visible components of the app.
+This is commonly referred to in frameworks as "routes".
+
+The proposal here is to make routes a first-class citizen in HTML, and using that (at first) for two things:
+1. Wrapping certain parts of the documents that belong to a certain route with a `<view>` element that describes that relationship.
+2. CSS at-rule conditions that get activated by route-matching, similar to media-queries:
 
 ```html
-<view match="/articles/:article-id" id=main-article>
+<!-- Similar shape to importmap -->
+<script type=routemap>
+  {
+    "movies": { "pattern": { "pathname": "/movies/:movie_id" } },
+    "about":  { "pattern": "/about" },
+    "home":   { "pattern": ["/home", "/"] }
+  }
+</script>
+
+<style>
+@route home {
+  nav {
+    display: none;
+  }
+}
+</style>
+
+<body>
+   <view match=home>
+   </view>
+   <view match=about>
+   </view>
+   <view match=movies>
+   </view>
+</body>
+```
+
+#### Details of `<view match=...>` and `<script type=routemap>`
+
+1. Every route can be one or more `URLPattern` (more precisely, the parameters to the `URLPattern` constructor)
+1. A `view` can be described by using CSS. It is merely an element that has `display: none` (or `content-visibility: hidden`, details TBD) when the route doesn't match.
+   The choice to make it an element makes it clear semantically that this part of the document is an app fragment.
+1. Views can be extended in the future to support a per-view URL ("HTML includes"), and have additional CSS selectors for links that target a particular route.
+1. Multiple views that match the same route can be present at the same time.
+1. Similarly, multiple routes can match the same URL at the same time. This is by design.
+1. The `match` attribute can be bikeshed... perhaps `matchroute`.
+
+### Part 3: Declarative same-document navigation
+
+Once we gain the ability to stream content into the document, and also declaratively match certain parts of the document to a URL pattern,
+many types of same-document navigations would not require complicated JS in order to run, and this type of operation can be done declaratively:
+
+```html
+
+<script type=routemap>
+  {
+    "article": { "pattern": "/articles/:article_id" },
+    "mode": "same-document"
+  }
+</script>
+
+<view match="article" id=main-article>
 Loading...
 </view>
 
 <!-- the user clicks a link to `/articles/foo123` -->
 <!-- navigation is intercepted -->
 <!-- new content includes: -->
-<template for=main-article mode=replace>
+<template for="main-article">
   <article>
     Content of article foo123
   </article>
@@ -194,19 +253,17 @@ Loading...
 </style>
 ```
 
-In an app that contains matching views, the developer does not have to worry about specifics of the navigation API, or how content is streamed.
-All they have to do is match their views with URL routes, and then stream the appropriate new content wrapped in `<template for=... mode...>` snippets.
-#### Details of `<view>`
+In an app that contains matching views, the developer does not have to worry about specifics of the navigation API, or the mechanics of streaming/piping.
+All they have to do is list their routes, declare which parts of their document match their URL routes, and then stream the appropriate new content wrapped in `<template for=...>` snippets.
 
-1. Multiple views can be present at the same time, and updated together using the same response. The response can be *identical* to a full document navigation response, as long as the view content is wrapped in `<template for>`. 
-1. A `view` would also have lifecycle events to enable developers to fine-tune its behavior using JS.
+#### Details of declarative interception
+
+1. When a route has a `mode: 'same-document'` (or `itnercept: true` or some such) clause, navigations to matching destinations would be intercepted. The navigation request would still take place, but only `<template for>` elements from the response would be spliced-streamed into the document.
 1. Declarative view transitions work out of the box.
-1. The “view update” request is identical to the navigation request. Content from the fetched document response is streamed, and added to the view in chunks, like normal HTML streaming.
-1. While streaming content, the `<view>` would get a pseudo-class (:partial?) activated. This pseudo-class can be used in ordinary document content streaming as well, to avoid the visual effect of streaming.
+1. Views matching the old/new route would receive an "unloading" and "loading" state, with appropriate JS events and CSS selectors.
+1. While streaming content, target elements would get a pseudo-class (:partial?) activated. This pseudo-class can be used in ordinary document content streaming as well, to avoid the visual effect of streaming.
 1. A partial response can include either a full document or just the modified templates, the UA should be able to work with both as valid HTML. 
-1. A `<view>` can have `<template status=loading|error>` children and/or matching `<template for= mode=loading|error>` elements, which, if available, get displayed instead of the regular content while new content is loading or if there is an error fetching.
-1. When the pattern stops matching, the view receives a `:deactivated` pseudo-class, and there is a UA style of `view:deactivated (content-visibility: hidden; width: 0; height: 0; interactivity: inert)` that can be overridden by the developer. Also, its contents are not DOM selectable, like a `<template>` element.
-1. A request for an intercepted partial update contains header information about the views that are about to be updated, and about the fact that it's a partial update.
+1. A request for an intercepted partial update contains header information about the views that are about to be updated, and about the fact that it's a partial update. This allows the response to include only the updated part (though we have to be careful about content-negotation trade-offs).
 
 ## Potential future enhancements
 1. We can consider also supporting 1st-class HTML includes, e.g. with `<view src="...">`. The initial proposal here for `<template for>` allows for this kind of experience without an additional network request with a special signature, by streaming the content in the same document response.
@@ -217,11 +274,10 @@ All they have to do is match their views with URL routes, and then stream the ap
 1. Improve loading of updates via speculation rules / prefetching, and extending this further by publishing a “site map” or some such that specifies relationship between routes.
 
 ## Open issues
-1. Perhaps it could be confusing that an element performs navigation interception? Does this need an opt-in in the `<head>`?
 1. This architecture might lead to sending different responses for the same URL based on headers, e.g. a partial document response. This doesn’t work well cross-browser and cross-CDN. Perhaps the partial responses need a separate URL, with the `src` attribute, and the intercepted navigation responses should be expected to be full?
 1. How does this interact with declarative shadow DOM? Can parts of a declarative shadow DOM be streamed in this way?
-1. Interaction with templating proposals such as DOM Parts
-1. Should `<view>` be a regular element in the DOM? Does that prevent it from being part of SVG/MathML/tables etc? Perhaps it should be a set of attributes/processing instruction?
+1. Interaction with templating proposals such as DOM Parts. Should we allow some sort of a "merge" semantic to `<template for>`?
+1. Does `view` need to be a new element? Perhaps a new attribute work better, like `popover` or `openable`?
 1. ID refs are notoriously footgunny and it's easy to get them wrong. However, they are the current referencing enabler of the web platform. Perhaps there is some way to go about refs that improves things for other features as well?
 
 
