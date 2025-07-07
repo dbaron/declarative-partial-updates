@@ -138,7 +138,7 @@ The approach here is a bit more generic, where the developer decides which parts
 
 ## This Proposal
 The goal of this proposal is to see whether the platform can help with this kind of experience, by introducing composable fragments (views, because the word fragment is used elsewhere...) and declarative partial document updates as a platform (HTML) primitive.
-It consists of 3 part. The first two stand on their own, and the last one uses the first two:
+It consists of three parts. The first two stand on their own, and the last one uses the first two:
 * Out-of-order streaming ("splice-stream")
 * Route matching
 * Declarative same-document navigations
