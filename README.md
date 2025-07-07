@@ -210,7 +210,7 @@ The proposal here is to make routes a first-class citizen in HTML, and using tha
 
 #### Details of `<view match=...>` and `<script type=routemap>`
 
-1. Every route can be one or more `URLPattern` (more precisely, the paramteres to the `URLPattern` constructor)
+1. Every route can be one or more `URLPattern` (more precisely, the parameters to the `URLPattern` constructor)
 1. A `view` can be described by using CSS. It is merely an element that has `content-visibility: hidden` when the route doesn't match.
    The choice to make it an element makes it clear semantically that this part of the document is an app fragment.
 1. Views can be extended in the future to support a per-view URL ("HTML includes"), and have additional CSS selectors for links that target a particular route.
