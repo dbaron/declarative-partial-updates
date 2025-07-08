@@ -36,7 +36,7 @@ To achieve this kind of user experience today, developers have to rely on JavaSc
 ## Design principles
 Our approach to partial document updates acknowledges the current dominance of full-stack frameworks in this area. The underlying design principles of this proposal are twofold:
 1. *Empowering Native UX*: We aim to enable a powerful, declarative user experience for same-document navigations, mirroring the seamless platform integration seen in cross-document navigations. This functionality is intended to be usable directly, independent of larger web frameworks.
-2. *Extensibility and Compatibility*: Concurrently, the proposal is designed with ample flexibility and low-level extensibility points. This ensures that current framework ecosystems and custom application logic can integrate with and leverage specific aspects of the solution, avoiding the need for a complete architectural overhaul.
+2. *Extensibility and Compatibility*: Concurrently, the proposal should be enhanced to include ample flexibility and low-level extensibility points. This would ensure that current framework ecosystems and custom application logic can integrate with and leverage specific aspects of the solution, avoiding the need for a complete architectural overhaul, or choosing this as an all-or-nothing framework/solution of its own.
 
 ## Prior art
 ### IFrames
