@@ -33,6 +33,13 @@ In modern web frameworks, composable fragments of an application have the follow
 All of these properties directly affect the quality of the user experience, in terms of performance and smoothness.
 To achieve this kind of user experience today, developers have to rely on JavaScript libraries or frameworks that manage in-document “components”, “pages”, “layout”, loading states etc.
 
+## Design principles
+Our approach to partial document updates acknowledges the current dominance of full-stack frameworks in this area. The underlying design principles of this proposal are twofold:
+1. *Empowering Native UX*: We aim to enable a powerful, declarative user experience for same-document navigations, mirroring the seamless platform integration seen in cross-document navigations. This functionality is intended to be usable directly, independent of larger web frameworks.
+2. *Extensibility and Compatibility*: Concurrently, the proposal should be enhanced to include ample flexibility and low-level extensibility points. This would ensure that current framework ecosystems and custom application logic can integrate with and leverage specific aspects of the solution, avoiding the need for a complete architectural overhaul, or choosing this as an all-or-nothing framework/solution of its own.
+
+As we go along with more specific design, we should make sure that we're honest with ourselves for meeting the bar of these design principles.
+
 ## Prior art
 ### IFrames
 IFrames are an existing web-platform mechanism for reusing content. However, IFrames are heavy-handed in terms of UI. They cannot escape their box, they are styled and scripted separately, and their layout is encapsulated from the rest of the page.
@@ -168,6 +175,7 @@ Loading...
 1. The template itself is just a DOM directive. It doesn't stay in the DOM after being processed.
 1. Potentially, we can make this template point to a *position* in the DOM rather than an ID, e.g. one or two CSS selectors and replacing everything between them.
    If we do that, the template does nothing and is discarded if it doesn't have anywhere to stream into.
+1. This type of stream-splicing will also come accompanied with a JS API to achieve the same (details TBD). 
 
 This is, in essence, a proposed solution for https://github.com/whatwg/html/issues/2791. 
 
@@ -217,6 +225,7 @@ The proposal here is to make routes a first-class citizen in HTML, and using tha
 1. Multiple views that match the same route can be present at the same time.
 1. Similarly, multiple routes can match the same URL at the same time. This is by design.
 1. The `match` attribute can be bikeshed... perhaps `matchroute`.
+2. Alternatively, we could start with more of a CSS-centric approach, with `<script type=routemap>` but without a new element. See https://github.com/WICG/declarative-partial-updates/issues/14.
 
 ### Part 3: Declarative same-document navigation
 
@@ -260,10 +269,12 @@ All they have to do is list their routes, declare which parts of their document 
 
 1. When a route has a `mode: 'same-document'` (or `itnercept: true` or some such) clause, navigations to matching destinations would be intercepted. The navigation request would still take place, but only `<template for>` elements from the response would be spliced-streamed into the document.
 1. Declarative view transitions work out of the box.
+1. Some non-navigation UI, like auto-closing popovers, can react automatically to this kind of navigation, e.g. by closing in this case. UI is tuned in a way that a "navigation" feels like a cross-document navigation (as in, resets state) in some cases but keeps things alive in other cases. 
 1. Views matching the old/new route would receive an "unloading" and "loading" state, with appropriate JS events and CSS selectors.
 1. While streaming content, target elements would get a pseudo-class (:partial?) activated. This pseudo-class can be used in ordinary document content streaming as well, to avoid the visual effect of streaming.
 1. A partial response can include either a full document or just the modified templates, the UA should be able to work with both as valid HTML. 
 1. A request for an intercepted partial update contains header information about the views that are about to be updated, and about the fact that it's a partial update. This allows the response to include only the updated part (though we have to be careful about content-negotation trade-offs).
+2. Declarative interceptions would come with a JS API that allows hooking into them at certain points, to avoid having to adopt the whole solution with all of its tradeoffs. (Details of this JS API TBD).
 
 ## Potential future enhancements
 1. We can consider also supporting 1st-class HTML includes, e.g. with `<view src="...">`. The initial proposal here for `<template for>` allows for this kind of experience without an additional network request with a special signature, by streaming the content in the same document response.
@@ -301,8 +312,6 @@ In fact, streaming itself is optional. The important bit is that a navigation re
 An HTML include by itself, without the view-style navigation, would require some added semantics (probably script?) as to when it is re-fetched from its URL.
 And if we do connect it with view-style navigation, it becomes a "simplified" combination of `<view>` and `<template for>`, where we know in advance that this navigation is going to update this view, and reach for a particular URL to grab this information.
 
-
-
 ### IFrames
 Too many gotchas and constraints, in term of layout/UI and ergonomics of crossing documents. This approach tries to work with how modern web development apps work, where the fragments are part of the same document.
 
@@ -319,7 +328,6 @@ This is possible, and has similarities with declarative shadow DOM, in terms of 
 This architecture primarily focuses on extending the ergonomics and capabilities of same-page applications. It is possible to explore other avenues that work in a more MPA/cross-document manner.
 However, it is unclear what that’s going to look like, and would potentially lead to an IFrame-based architecture.
 
-## Lastly, is the web platform competing with frameworks?
-The direction of this proposal is to tackle the specific aspects of out-of-order streaming and composable fragments, which are issues that frameworks tackle as well.
-However, this proposal is agnostic to a lot of DX-time aspects of frameworks, and in particular templating or how a JS or JSON-based model is compiled to HTML.
-Frameworks can provide a lot of value in terms of opinionated development time ideas, which can be incorporated with stronger browser foundations around seamless navigation and content streaming.
+### Lower-level JS API
+Another way to go about this is to introduce JS primitives that introduce similar functionality but are less opinionated in terms of being declarative.
+At least for out-of-order streaming, this can definitely be a useful primitive alongside the more server-driven HTML primitive.
