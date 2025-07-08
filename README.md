@@ -267,6 +267,7 @@ All they have to do is list their routes, declare which parts of their document 
 1. While streaming content, target elements would get a pseudo-class (:partial?) activated. This pseudo-class can be used in ordinary document content streaming as well, to avoid the visual effect of streaming.
 1. A partial response can include either a full document or just the modified templates, the UA should be able to work with both as valid HTML. 
 1. A request for an intercepted partial update contains header information about the views that are about to be updated, and about the fact that it's a partial update. This allows the response to include only the updated part (though we have to be careful about content-negotation trade-offs).
+2. This default behavior of retrieving the document and parsing just the splice parts of it is optional. Authors that want to integrate with the default UX features of declarative interception but want to update the document in their own way will be able to do so via JS hooks.
 
 ## Potential future enhancements
 1. We can consider also supporting 1st-class HTML includes, e.g. with `<view src="...">`. The initial proposal here for `<template for>` allows for this kind of experience without an additional network request with a special signature, by streaming the content in the same document response.
