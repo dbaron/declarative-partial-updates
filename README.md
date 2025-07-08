@@ -168,6 +168,7 @@ Loading...
 1. The template itself is just a DOM directive. It doesn't stay in the DOM after being processed.
 1. Potentially, we can make this template point to a *position* in the DOM rather than an ID, e.g. one or two CSS selectors and replacing everything between them.
    If we do that, the template does nothing and is discarded if it doesn't have anywhere to stream into.
+1. This can and should be extended to be used as a low-level JS API and not only as an server-driven HTML primitive. 
 
 This is, in essence, a proposed solution for https://github.com/whatwg/html/issues/2791. 
 
@@ -217,6 +218,7 @@ The proposal here is to make routes a first-class citizen in HTML, and using tha
 1. Multiple views that match the same route can be present at the same time.
 1. Similarly, multiple routes can match the same URL at the same time. This is by design.
 1. The `match` attribute can be bikeshed... perhaps `matchroute`.
+2. Alternatively, we could start with more of a CSS-centric approach, with `<script type=routemap>` but without a new element. See #14.
 
 ### Part 3: Declarative same-document navigation
 
@@ -260,6 +262,7 @@ All they have to do is list their routes, declare which parts of their document 
 
 1. When a route has a `mode: 'same-document'` (or `itnercept: true` or some such) clause, navigations to matching destinations would be intercepted. The navigation request would still take place, but only `<template for>` elements from the response would be spliced-streamed into the document.
 1. Declarative view transitions work out of the box.
+1. Some non-navigation UI, like auto-closing popovers, can react automatically to this kind of navigation, e.g. by closing in this case. UI is tuned in a way that a "navigation" feels like a cross-document navigation (as in, resets state) in some cases but keeps things alive in other cases. 
 1. Views matching the old/new route would receive an "unloading" and "loading" state, with appropriate JS events and CSS selectors.
 1. While streaming content, target elements would get a pseudo-class (:partial?) activated. This pseudo-class can be used in ordinary document content streaming as well, to avoid the visual effect of streaming.
 1. A partial response can include either a full document or just the modified templates, the UA should be able to work with both as valid HTML. 
@@ -301,8 +304,6 @@ In fact, streaming itself is optional. The important bit is that a navigation re
 An HTML include by itself, without the view-style navigation, would require some added semantics (probably script?) as to when it is re-fetched from its URL.
 And if we do connect it with view-style navigation, it becomes a "simplified" combination of `<view>` and `<template for>`, where we know in advance that this navigation is going to update this view, and reach for a particular URL to grab this information.
 
-
-
 ### IFrames
 Too many gotchas and constraints, in term of layout/UI and ergonomics of crossing documents. This approach tries to work with how modern web development apps work, where the fragments are part of the same document.
 
@@ -319,7 +320,13 @@ This is possible, and has similarities with declarative shadow DOM, in terms of 
 This architecture primarily focuses on extending the ergonomics and capabilities of same-page applications. It is possible to explore other avenues that work in a more MPA/cross-document manner.
 However, it is unclear what that’s going to look like, and would potentially lead to an IFrame-based architecture.
 
-## Lastly, is the web platform competing with frameworks?
-The direction of this proposal is to tackle the specific aspects of out-of-order streaming and composable fragments, which are issues that frameworks tackle as well.
-However, this proposal is agnostic to a lot of DX-time aspects of frameworks, and in particular templating or how a JS or JSON-based model is compiled to HTML.
-Frameworks can provide a lot of value in terms of opinionated development time ideas, which can be incorporated with stronger browser foundations around seamless navigation and content streaming.
+### Lower-level JS API
+Another way to go about this is to introduce JS primitives that introduce similar functionality but are less opinionated in terms of being declarative.
+At least for out-of-order streaming, this can definitely be a useful primitive alongside the more server-driven HTML primitive.
+
+## Relationship with web frameworks
+This proposal's scope does not include client-side rendering or data-to-HTML transformation, areas typically handled by frameworks like React or Angular. However, it does intersect with functionality found in full-stack web frameworks such as Next.js and SvelteKit, specifically regarding navigation interception and routing.
+
+As we develop these features, our priority is to ensure that the new concepts either enhance existing frameworks by providing superior platform primitives (particularly around streaming and CSS integration) or, at the very least, avoid introducing conflicting approaches that could complicate integration without a lower level integration point. Our core design goal remains consistent: to bring same-document navigations closer to the web platform, enabling better integration with current and future web features and delivering a more seamless user experience by default.
+
+
