@@ -38,6 +38,8 @@ Our approach to partial document updates acknowledges the current dominance of f
 1. *Empowering Native UX*: We aim to enable a powerful, declarative user experience for same-document navigations, mirroring the seamless platform integration seen in cross-document navigations. This functionality is intended to be usable directly, independent of larger web frameworks.
 2. *Extensibility and Compatibility*: Concurrently, the proposal should be enhanced to include ample flexibility and low-level extensibility points. This would ensure that current framework ecosystems and custom application logic can integrate with and leverage specific aspects of the solution, avoiding the need for a complete architectural overhaul, or choosing this as an all-or-nothing framework/solution of its own.
 
+As we go along with more specific design, we should make sure that we're honest with ourselves for meeting the bar of these design principles.
+
 ## Prior art
 ### IFrames
 IFrames are an existing web-platform mechanism for reusing content. However, IFrames are heavy-handed in terms of UI. They cannot escape their box, they are styled and scripted separately, and their layout is encapsulated from the rest of the page.
