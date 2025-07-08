@@ -331,6 +331,3 @@ However, it is unclear what that’s going to look like, and would potentially l
 ### Lower-level JS API
 Another way to go about this is to introduce JS primitives that introduce similar functionality but are less opinionated in terms of being declarative.
 At least for out-of-order streaming, this can definitely be a useful primitive alongside the more server-driven HTML primitive.
-
-
-
