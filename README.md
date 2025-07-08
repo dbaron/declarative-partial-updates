@@ -225,7 +225,7 @@ The proposal here is to make routes a first-class citizen in HTML, and using tha
 1. Multiple views that match the same route can be present at the same time.
 1. Similarly, multiple routes can match the same URL at the same time. This is by design.
 1. The `match` attribute can be bikeshed... perhaps `matchroute`.
-2. Alternatively, we could start with more of a CSS-centric approach, with `<script type=routemap>` but without a new element. See #14.
+2. Alternatively, we could start with more of a CSS-centric approach, with `<script type=routemap>` but without a new element. See https://github.com/WICG/declarative-partial-updates/issues/14.
 
 ### Part 3: Declarative same-document navigation
 
