@@ -33,6 +33,11 @@ In modern web frameworks, composable fragments of an application have the follow
 All of these properties directly affect the quality of the user experience, in terms of performance and smoothness.
 To achieve this kind of user experience today, developers have to rely on JavaScript libraries or frameworks that manage in-document “components”, “pages”, “layout”, loading states etc.
 
+## Design principles
+Our approach to partial document updates acknowledges the current dominance of full-stack frameworks in this area. The underlying design principles of this proposal are twofold:
+1. *Empowering Native UX*: We aim to enable a powerful, declarative user experience for same-document navigations, mirroring the seamless platform integration seen in cross-document navigations. This functionality is intended to be usable directly, independent of larger web frameworks.
+2. *Extensibility and Compatibility*: Concurrently, the proposal is designed with ample flexibility and low-level extensibility points. This ensures that current framework ecosystems and custom application logic can integrate with and leverage specific aspects of the solution, avoiding the need for a complete architectural overhaul.
+
 ## Prior art
 ### IFrames
 IFrames are an existing web-platform mechanism for reusing content. However, IFrames are heavy-handed in terms of UI. They cannot escape their box, they are styled and scripted separately, and their layout is encapsulated from the rest of the page.
@@ -325,9 +330,5 @@ However, it is unclear what that’s going to look like, and would potentially l
 Another way to go about this is to introduce JS primitives that introduce similar functionality but are less opinionated in terms of being declarative.
 At least for out-of-order streaming, this can definitely be a useful primitive alongside the more server-driven HTML primitive.
 
-## Relationship with web frameworks
-This proposal's scope does not include client-side rendering or data-to-HTML transformation, areas typically handled by frameworks like React or Angular. However, it does intersect with functionality found in full-stack web frameworks such as Next.js and SvelteKit, specifically regarding navigation interception and routing.
-
-As we develop these features, our priority is to ensure that the new concepts either enhance existing frameworks by providing superior platform primitives (particularly around streaming and CSS integration) or, at the very least, avoid introducing conflicting approaches that could complicate integration without a lower level integration point. Our core design goal remains consistent: to bring same-document navigations closer to the web platform, enabling better integration with current and future web features and delivering a more seamless user experience by default.
 
 
