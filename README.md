@@ -175,8 +175,8 @@ Loading...
 1. The template itself is just a DOM directive. It doesn't stay in the DOM after being processed.
 1. Potentially, we can make this template point to a *position* in the DOM rather than an ID, e.g. one or two CSS selectors and replacing everything between them.
    If we do that, the template does nothing and is discarded if it doesn't have anywhere to stream into.
-1. This type of stream-splicing will also come accompanied with a JS API to achieve the same (details TBD). 
-
+1. This type of stream-splicing will also come accompanied with a JS API to achieve the same. See #16.
+ 
 This is, in essence, a proposed solution for https://github.com/whatwg/html/issues/2791. 
 
 ### Part 2: URL matching with views & routes
