@@ -3,7 +3,6 @@
 HTML primitives for updating parts of a document without a full page refresh
 See https://github.com/whatwg/html/issues/2142 and https://github.com/whatwg/html/issues/2791 for very long context.
 
-
 ## Status of this document
 This is an initial explainer for introducing the problem space and a few proposed solutions.
 See this as a starting point for discussion rather than a finished product.
@@ -146,15 +145,16 @@ The approach here is a bit more generic, where the developer decides which parts
 ## This Proposal
 The goal of this proposal is to see whether the platform can help with this kind of experience, by introducing composable fragments (views, because the word fragment is used elsewhere...) and declarative partial document updates as a platform (HTML) primitive.
 It consists of three parts. The first two stand on their own, and the last one uses the first two:
-* Out-of-order streaming ("splice-stream")
+* Patching (out-of-order streaming)
 * Route matching
 * Declarative same-document navigations
 
-### Part 1: Out-of-order streaming ("splice-stream")
+### Part 1: Patching (out-of-order streaming)
 Currently, the DOM tree is updated in the order in which its HTML content is received from the network. This is a good architecture for an article to be read linearly, however many modern web apps are not built in that way.
 Often in modern web apps, the layout of the document is present, with parts of it loaded simultaneously or in some asynchronous order, with some loading indicators or a skeleton UI to indicate this progression. 
 
-The proposal here is to extend the `<template>` element with a `for` attribute that would repurpose it for this type of out-of-order update.
+The proposal here is to extend the `<template>` element with a `patchfor` (or `for`) attribute that would repurpose it to be a patch that updates the document or shadow root it is inserted into.
+`<template patchfor>` essentially becomes an HTML-only encoding for a DOM update.
 
 ```html
 <!-- initial response -->
@@ -163,23 +163,36 @@ Loading...
 </section>
 
 <!-- later during the loading process, e.g. when the gallery content is ready -->
-<template for="photo-gallery">
+<template patchfor="photo-gallery">
   ... the actual gallery...
 </template>
+
+<!-- When we want to update a document or shadow root with new out-of-order streaming content -->
+<script>
+async function update_doc() {
+  // The response's type would be "text/html".
+  const response = await fetch("/new-data");
+
+  // This would stream the response to the body, applying only patches and discarding the rest.
+  await document.patch(response);
+
+  // We can also stream patches into a shadow root.
+  const element_internal_response = await fetch("/element-data");
+  await some_element.shadowRoot.patch(element_internal_response);
+}
+</script>
 ```
 
-#### Details of `<template for=...>`
+#### Details of patching
 
-1. The `for` attribute behaves like `<label for>`, pointing to an ID.
-1. When a `<template for>` is discovered, its contents are streamed into its target position.
-1. The template itself is just a DOM directive. It doesn't stay in the DOM after being processed.
-1. Potentially, we can make this template point to a *position* in the DOM rather than an ID, e.g. one or two CSS selectors and replacing everything between them.
-   If we do that, the template does nothing and is discarded if it doesn't have anywhere to stream into.
-1. This type of stream-splicing will also come accompanied with a JS API to achieve the same. See #16.
- 
-This is, in essence, a proposed solution for https://github.com/whatwg/html/issues/2791. 
+1. The `patchfor` attribute is an IDREF, and behaves like `<label for>`, pointing to an ID. See https://github.com/whatwg/html/issues/10143 for efforts to make that DX better.
+1. When a `<template patchfor>` is discovered, its contents are parsed directly into its target position, without adding the actual `<template>` element to the DOM.
+   When the corresponding `</template>` end tag is discovered, parsing resumes as normal. 
+2. A patch whose target is not found is parsed as a normal `<template>` element and remains in the DOM. There is no further change detection to try to match it, and the author is responsible for that kind of change detection if they so choose.
+   This is equivalent to trying to setting the `innerHTML` of a DOM element that doesn't exist.
+4. `documentOrShadowRoot.patch(response)` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root.
 
-### Part 2: URL matching with views & routes
+### Part 2: Route matching
 
 To effectively match between parts of the document and the state of the app, there is commonly a relationship between the document's URL and active/visible components of the app.
 This is commonly referred to in frameworks as "routes".
@@ -331,3 +344,9 @@ However, it is unclear what that’s going to look like, and would potentially l
 ### Lower-level JS API
 Another way to go about this is to introduce JS primitives that introduce similar functionality but are less opinionated in terms of being declarative.
 At least for out-of-order streaming, this can definitely be a useful primitive alongside the more server-driven HTML primitive.
+
+### Using `multipart/form-data` instead of `<template patchfor>`
+Multipart form data (e.g. `Response.formData()` is a battle tested encoding for multiple parts, however it is quite antiquated and rigid (has only two attributes that are specified in the RFC).
+The main benefits of multipart is the ability to encode multiple mime types in the same response, however this is not useful when encoding HTML only.
+The other benefit of encoding HTML patches in HTML itself is that those patches can be part of a normal response, allowing out of order updates after or in between normal HTML.
+
