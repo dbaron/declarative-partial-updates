@@ -190,7 +190,7 @@ async function update_doc() {
    When the corresponding `</template>` end tag is discovered, parsing resumes as normal. 
 2. A patch whose target is not found is parsed as a normal `<template>` element and remains in the DOM. There is no further change detection to try to match it, and the author is responsible for that kind of change detection if they so choose.
    This is equivalent to trying to setting the `innerHTML` of a DOM element that doesn't exist.
-4. `documentOrShadowRoot.patch(response)` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root.
+4. `documentOrShadowRoot.patch(response, { signal })` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root. `signal` is an `AbortSignal` so that the process can be canceled.
 
 ### Part 2: Route matching
 
