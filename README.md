@@ -179,6 +179,20 @@ async function update_doc() {
   // We can also stream patches into a shadow root.
   const element_internal_response = await fetch("/element-data");
   await some_element.shadowRoot.patch(element_internal_response);
+
+  const gallery_container = document.querySelector("photo-gallery");
+  gallery_container.addEventListener("patch", () => { /* called when a patch starts */ });
+
+  const {currentPatch} = gallery_container;
+  // This will be null if there is no ongoing patch, similar to `navigation.transition`
+  if (currentPatch) {
+    if (should_abort() {
+       currentPatch.signal.abort();
+    }
+    currentPatch.finished
+        .then(() => { /* patch complete */ })
+        .catch(() => { /* error while patching, e.g. request closed */ });
+  }
 }
 </script>
 ```
@@ -188,9 +202,12 @@ async function update_doc() {
 1. The `patchfor` attribute is an IDREF, and behaves like `<label for>`, pointing to an ID. See https://github.com/whatwg/html/issues/10143 for efforts to make that DX better.
 1. When a `<template patchfor>` is discovered, its contents are parsed directly into its target position, without adding the actual `<template>` element to the DOM.
    When the corresponding `</template>` end tag is discovered, parsing resumes as normal. 
-2. A patch whose target is not found is parsed as a normal `<template>` element and remains in the DOM. There is no further change detection to try to match it, and the author is responsible for that kind of change detection if they so choose.
+1. A patch whose target is not found is parsed as a normal `<template>` element and remains in the DOM. There is no further change detection to try to match it, and the author is responsible for that kind of change detection if they so choose.
    This is equivalent to trying to setting the `innerHTML` of a DOM element that doesn't exist.
-4. `documentOrShadowRoot.patch(response, { signal })` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root. `signal` is an `AbortSignal` so that the process can be canceled.
+1. `documentOrShadowRoot.patch(response, { signal })` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root. `signal` is an `AbortSignal` so that the process can be canceled.
+2. `element.currentPatch` returns (null or) an object that reflects the current status of a patch, and allows aborting it. It has a `signal` (an `AbortSignal`), and a `finished` promise that can resolve/reject based on the patch process.
+3. `element.onpatch` is an event that gets fired when an element is being patched.
+4. `:patching` and `:patch-error` are pseudo-classes that are activated on the element during patch.
 
 ### Part 2: Route matching
 
