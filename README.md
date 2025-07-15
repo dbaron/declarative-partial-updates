@@ -180,7 +180,7 @@ async function update_doc() {
   const element_internal_response = await fetch("/element-data");
   await some_element.shadowRoot.patch(element_internal_response);
 
-  const gallery_container = document.querySelector("photo-gallery");
+  const gallery_container = document.getElementById("photo-gallery");
   gallery_container.addEventListener("patch", () => { /* called when a patch starts */ });
 
   const {currentPatch} = gallery_container;
