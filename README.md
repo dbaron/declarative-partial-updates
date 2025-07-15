@@ -186,7 +186,7 @@ async function update_doc() {
   const {currentPatch} = gallery_container;
   // This will be null if there is no ongoing patch, similar to `navigation.transition`
   if (currentPatch) {
-    if (should_abort() {
+    if (should_abort()) {
        currentPatch.signal.abort();
     }
     currentPatch.finished
