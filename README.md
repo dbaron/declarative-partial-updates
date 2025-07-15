@@ -206,7 +206,7 @@ async function update_doc() {
    This is equivalent to trying to setting the `innerHTML` of a DOM element that doesn't exist.
 1. `documentOrShadowRoot.patch(response, { signal })` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root. `signal` is an `AbortSignal` so that the process can be canceled.
 1. `element.currentPatch` returns (null or) an object that reflects the current status of a patch, and allows aborting it. It has a `signal` (an `AbortSignal`), and a `finished` promise that can resolve/reject based on the patch process.
-1. `element.onpatch` is an event that gets fired when an element is being patched.
+1. The "patch" event is fired when an element is being patched, with the same timing as mutation observer callbacks and "slotchange" events.
 1. `:patching` and `:patch-error` are pseudo-classes that are activated on the element during patch.
 
 ### Part 2: Route matching
