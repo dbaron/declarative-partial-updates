@@ -152,7 +152,7 @@ It consists of three parts. The first two stand on their own, and the last one u
 Currently, the DOM tree is updated in the order in which its HTML content is received from the network. This is a good architecture for an article to be read linearly, however many modern web apps are not built in that way.
 Often in modern web apps, the layout of the document is present, with parts of it loaded simultaneously or in some asynchronous order, with some loading indicators or a skeleton UI to indicate this progression. 
 
-The proposal here is to extend the `<template>` element with a `patchfor` (or `for`) attribute that would repurpose it to be a patch that updates the document or shadow root it is inserted into, and a `src` attribute that would allow fetching the patch content from an external URL.
+The proposal here is to extend the `<template>` element with a `patchfor` (or `for`) attribute that would repurpose it to be a patch that updates the document or shadow root it is inserted into, and a `patchsrc` attribute that would allow fetching the patch content from an external URL.
 `<template patchfor>` essentially becomes an HTML-only encoding for a DOM update.
 
 ```html
@@ -197,7 +197,7 @@ async function update_doc() {
 
 <!-- The patch content can be fetched from an external URL. -->
 <!-- The inline content will be shown as fallback if fetching failed -->
-<template patchfor="photo-gallery" src="/gallery-content.php">
+<template patchfor="photo-gallery" patchsrc="/gallery-content.php">
   Failed to load
 </template>
 
@@ -219,10 +219,10 @@ photoGallery.patch(await fetch("/gallery-content.php"));
 1. `element.currentPatch` returns (null or) an object that reflects the current status of a patch, and allows aborting it. It has a `signal` (an `AbortSignal`), and a `finished` promise that can resolve/reject based on the patch process.
 1. The "patch" event is fired when an element is being patched, with the same timing as mutation observer callbacks and "slotchange" events.
 1. The `:patching` pseudo-class is activated on the element during patch.
-1. The `src` attribute allows fetching the content of the patch from a different URL, using a cors-anonymous fetch (allowing `crossorigin`/`referrerpolicy` attributes and all that jazz).
+1. The `patchsrc` attribute allows fetching the content of the patch from a different URL, using a cors-anonymous fetch (allowing `crossorigin`/`referrerpolicy` attributes and all that jazz).
 1. While the content is being fetched, the element receives a `:loading` pseudo-class.
 1. If fetching failed, the template's inline content is used for the patch as fallback, and the element receives a `:loading-error` pseudo-class.
-1. If `src` is present without a `patchfor`, this template is considered to be a patch for its parent.
+1. If `patchsrc` is present without a `patchfor`, this template is considered to be a patch for its parent.
 1. Nested patch ID lookup is scoped. So, e.g., `<template patchfor=a><template patchfor=b>content</template></template>`, would update the content of `#a #b`.
 
 ### Part 2: Route matching
