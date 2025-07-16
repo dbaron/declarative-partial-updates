@@ -195,7 +195,7 @@ async function update_doc() {
 }
 </script>
 
-<!-- If we have a specific URL endpoint for the template content -->
+<!-- The patch content can be fetched from an external URL. -->
 <!-- The inline content will be shown as fallback if fetching failed -->
 <template patchfor="photo-gallery" src="/gallery-content.php">
   Failed to load
