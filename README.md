@@ -173,7 +173,7 @@ async function update_doc() {
   const response = await fetch("/new-data");
 
   // This would stream the response to the body, applying only patches and discarding the rest.
-  await document.patchAll(response);
+  await document.patch(response);
 
   // We can also stream patches into a shadow root.
   const element_internal_response = await fetch("/element-data");
@@ -200,6 +200,11 @@ async function update_doc() {
 <template patchfor="photo-gallery" src="/gallery-content.php">
   Failed to load
 </template>
+
+<!-- this can also be done with script -->
+<script>
+photoGallery.patch(await fetch("/gallery-content.php"));
+</script>
 ```
 
 #### Details of patching
@@ -209,8 +214,8 @@ async function update_doc() {
    When the corresponding `</template>` end tag is discovered, parsing resumes as normal. 
 1. A patch whose target is not found is parsed as a normal `<template>` element and remains in the DOM. There is no further change detection to try to match it, and the author is responsible for that kind of change detection if they so choose.
    This is equivalent to trying to setting the `innerHTML` of a DOM element that doesn't exist.
-1. `documentOrShadowRoot.patch(response, { signal })` streams the content of an HTML response directly into an element. `signal` is an `AbortSignal` so that the process can be canceled.
-1. `documentOrShadowRoot.patchAll(response, { signal })` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root. `signal` is an `AbortSignal` so that the process can be canceled.
+1. `element.patch(response, { signal })` streams the content of an HTML response directly into an element. `signal` is an `AbortSignal` so that the process can be canceled. `<template patchfor>` snippets inside of this response would be scoped to the target element.
+1. `documentOrShadowRoot.patch(response, { signal })` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root. `signal` is an `AbortSignal` so that the process can be canceled.
 1. `element.currentPatch` returns (null or) an object that reflects the current status of a patch, and allows aborting it. It has a `signal` (an `AbortSignal`), and a `finished` promise that can resolve/reject based on the patch process.
 1. The "patch" event is fired when an element is being patched, with the same timing as mutation observer callbacks and "slotchange" events.
 1. The `:patching` pseudo-class is activated on the element during patch.
@@ -218,6 +223,7 @@ async function update_doc() {
 1. While the content is being fetched, the element receives a `:loading` pseudo-class.
 1. If fetching failed, the template's inline content is used for the patch as fallback, and the element receives a `:loading-error` pseudo-class.
 1. If `src` is present without a `patchfor`, this template is considered to be a patch for its parent.
+1. Nested patch ID lookup is scoped. So, e.g., `<template patchfor=a><template patchfor=b>content</template></template>`, would update the content of `#a #b`.
 
 ### Part 2: Route matching
 
