@@ -1,11 +1,10 @@
 # Declarative partial updates
 
 HTML primitives for updating parts of a document without a full page refresh
-See https://github.com/whatwg/html/issues/2142 and https://github.com/whatwg/html/issues/2791 for very long context.
+Addresses https://github.com/whatwg/html/issues/2142 and https://github.com/whatwg/html/issues/2791 in a unified manner.
 
 ## Status of this document
-This is an initial explainer for introducing the problem space and a few proposed solutions.
-See this as a starting point for discussion rather than a finished product.
+This is an living explainer. It is continuously updated as we receive more feedback and update the design and the prototypes.
 
 ## Overview
 ### Full page refresh
@@ -153,7 +152,7 @@ It consists of three parts. The first two stand on their own, and the last one u
 Currently, the DOM tree is updated in the order in which its HTML content is received from the network. This is a good architecture for an article to be read linearly, however many modern web apps are not built in that way.
 Often in modern web apps, the layout of the document is present, with parts of it loaded simultaneously or in some asynchronous order, with some loading indicators or a skeleton UI to indicate this progression. 
 
-The proposal here is to extend the `<template>` element with a `patchfor` (or `for`) attribute that would repurpose it to be a patch that updates the document or shadow root it is inserted into.
+The proposal here is to extend the `<template>` element with a `patchfor` (or `for`) attribute that would repurpose it to be a patch that updates the document or shadow root it is inserted into, and a `src` attribute that would allow fetching the patch content from an external URL.
 `<template patchfor>` essentially becomes an HTML-only encoding for a DOM update.
 
 ```html
@@ -174,7 +173,7 @@ async function update_doc() {
   const response = await fetch("/new-data");
 
   // This would stream the response to the body, applying only patches and discarding the rest.
-  await document.patch(response);
+  await document.patchAll(response);
 
   // We can also stream patches into a shadow root.
   const element_internal_response = await fetch("/element-data");
@@ -195,6 +194,12 @@ async function update_doc() {
   }
 }
 </script>
+
+<!-- If we have a specific URL endpoint for the template content -->
+<!-- The inline content will be shown as fallback if fetching failed -->
+<template patchfor="photo-gallery" src="/gallery-content.php">
+  Failed to load
+</template>
 ```
 
 #### Details of patching
@@ -204,10 +209,15 @@ async function update_doc() {
    When the corresponding `</template>` end tag is discovered, parsing resumes as normal. 
 1. A patch whose target is not found is parsed as a normal `<template>` element and remains in the DOM. There is no further change detection to try to match it, and the author is responsible for that kind of change detection if they so choose.
    This is equivalent to trying to setting the `innerHTML` of a DOM element that doesn't exist.
-1. `documentOrShadowRoot.patch(response, { signal })` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root. `signal` is an `AbortSignal` so that the process can be canceled.
+1. `documentOrShadowRoot.patch(response, { signal })` streams the content of an HTML response directly into an element. `signal` is an `AbortSignal` so that the process can be canceled.
+1. `documentOrShadowRoot.patchAll(response, { signal })` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root. `signal` is an `AbortSignal` so that the process can be canceled.
 1. `element.currentPatch` returns (null or) an object that reflects the current status of a patch, and allows aborting it. It has a `signal` (an `AbortSignal`), and a `finished` promise that can resolve/reject based on the patch process.
 1. The "patch" event is fired when an element is being patched, with the same timing as mutation observer callbacks and "slotchange" events.
-1. `:patching` and `:patch-error` are pseudo-classes that are activated on the element during patch.
+1. The `:patching` pseudo-class is activated on the element during patch.
+1. The `src` attribute allows fetching the content of the patch from a different URL, using a cors-anonymous fetch (allowing `crossorigin`/`referrerpolicy` attributes and all that jazz).
+1. While the content is being fetched, the element receives a `:loading` pseudo-class.
+1. If fetching failed, the template's inline content is used for the patch as fallback, and the element receives a `:loading-error` pseudo-class.
+1. If `src` is present without a `patchfor`, this template is considered to be a patch for its parent.
 
 ### Part 2: Route matching
 
@@ -307,8 +317,6 @@ All they have to do is list their routes, declare which parts of their document 
 2. Declarative interceptions would come with a JS API that allows hooking into them at certain points, to avoid having to adopt the whole solution with all of its tradeoffs. (Details of this JS API TBD).
 
 ## Potential future enhancements
-1. We can consider also supporting 1st-class HTML includes, e.g. with `<view src="...">`. The initial proposal here for `<template for>` allows for this kind of experience without an additional network request with a special signature, by streaming the content in the same document response.
-   However it is not set in stone.
 1. Allowing the developer to fine-tune the relationship between routes, e.g. allow some route transition to replace the current history entry rather than push a new one.
 1. A reverse relationship: a `<view>` activates a URL when it becomes visible (e.g. scrolled to). This can allow creating gesture-based user interfaces without manually managing them via JS.
 1. Using CSP to allow/disallow declarative navigation interception
@@ -326,21 +334,8 @@ All they have to do is list their routes, declare which parts of their document 
 
 ### HTML "include"
 
-The `<template for>` / `<view>` proposal puts HTML streaming at the forefront rather than HTML includes.
-This choice might seem surprising, and is open for debate, and has a few trade offs.
-In general, however, those approaches do not conflict and either can be added as an enhancement.
-
-The main theme of `<template for>` is that it is not opinionated about which parts of the DOM can be dynamically updated.
-Anything in the DOM with an ID (or with any other form of reference like CSS selectors if we choose to go down that route) can be streamed into with a `<template for>` snippet.
-It can be a `<view>` but it can also be appending into a `<ul>`. To achieve this with HTML includes we'd need to do something like add processing instructions with a URL in multiple parts of the DOM, or somehow treat the include element in a special way.
-
-In addition, HTML includes require that each place in the DOM that can be dynamically updated in this way needs to have a URL and an endpoint that knows how to serve it individually.
-Instead, in the streaming approach, the process of *navigating* is where this decision is made and all the fresh content is generated.
-The navigation response can update one, multiple or no parts of the DOM, as long as they're referrable, and there is no need to keep multiple individual `<view>` requests in sync.
-In fact, streaming itself is optional. The important bit is that a navigation response carries all of the updated state in a somewhat "atomic" manner.
- 
-An HTML include by itself, without the view-style navigation, would require some added semantics (probably script?) as to when it is re-fetched from its URL.
-And if we do connect it with view-style navigation, it becomes a "simplified" combination of `<view>` and `<template for>`, where we know in advance that this navigation is going to update this view, and reach for a particular URL to grab this information.
+The `<template patchfor>`  proposal puts HTML streaming at the forefront rather than HTML includes, however it allows for HTML includes as well by streaming from an external URL using the `src` attribute.
+This addresses some of the issues found in previous HTML inclusion proposal, as it clarifies the semantics of the included content - it's a streaming "patch" with an inline fallback, and works like other patches with an additional external fetch. 
 
 ### IFrames
 Too many gotchas and constraints, in term of layout/UI and ergonomics of crossing documents. This approach tries to work with how modern web development apps work, where the fragments are part of the same document.
