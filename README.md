@@ -340,7 +340,7 @@ All they have to do is list their routes, declare which parts of their document 
 
 ### HTML "include"
 
-The `<template patchfor>`  proposal puts HTML streaming at the forefront rather than HTML includes, however it allows for HTML includes as well by streaming from an external URL using the `src` attribute.
+The `<template patchfor>`  proposal puts HTML streaming at the forefront rather than HTML includes, however it allows for HTML includes as well by streaming from an external URL using the `patchsrc` attribute.
 This addresses some of the issues found in previous HTML inclusion proposal, as it clarifies the semantics of the included content - it's a streaming "patch" with an inline fallback, and works like other patches with an additional external fetch. 
 
 ### IFrames
