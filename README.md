@@ -271,7 +271,8 @@ The proposal here is to make routes a first-class citizen in HTML, and using tha
 1. Multiple views that match the same route can be present at the same time.
 1. Similarly, multiple routes can match the same URL at the same time. This is by design.
 1. The `match` attribute can be bikeshed... perhaps `matchroute`.
-2. Alternatively, we could start with more of a CSS-centric approach, with `<script type=routemap>` but without a new element. See https://github.com/WICG/declarative-partial-updates/issues/14.
+1. A `navigator.routes` [maplike](https://webidl.spec.whatwg.org/#idl-maplike) object reflects the routemap, so that `navigator.routes.get('movies')` returns an object with a `pattern` property (a `URLPattern`) and a `matches` boolean when the route matches. A "change" event is fired on the `navigator.routes` object when the matching route changes.
+1. Alternatively, we could start with more of a CSS-centric approach, with `<script type=routemap>` but without a new element. See https://github.com/WICG/declarative-partial-updates/issues/14.
 
 ### Part 3: Declarative same-document navigation
 
