@@ -314,7 +314,7 @@ All they have to do is list their routes, declare which parts of their document 
 
 #### Details of declarative interception
 
-1. When a route has a `mode: 'same-document'` (or `itnercept: true` or some such) clause, navigations to matching destinations would be intercepted. The navigation request would still take place, but only `<template for>` elements from the response would be spliced-streamed into the document.
+1. When a route has a `mode: 'same-document'` (or `intercept: true` or some such) clause, navigations to matching destinations would be intercepted. The navigation request would still take place, but only `<template for>` elements from the response would be spliced-streamed into the document.
 1. Declarative view transitions work out of the box.
 1. Some non-navigation UI, like auto-closing popovers, can react automatically to this kind of navigation, e.g. by closing in this case. UI is tuned in a way that a "navigation" feels like a cross-document navigation (as in, resets state) in some cases but keeps things alive in other cases. 
 1. Views matching the old/new route would receive an "unloading" and "loading" state, with appropriate JS events and CSS selectors.
