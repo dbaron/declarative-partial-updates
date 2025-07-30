@@ -211,19 +211,26 @@ photoGallery.patch(await fetch("/gallery-content.php"));
 
 1. The `patchfor` attribute is an IDREF, and behaves like `<label for>`, pointing to an ID. See https://github.com/whatwg/html/issues/10143 for efforts to make that DX better.
 1. When a `<template patchfor>` is discovered, its contents are parsed directly into its target position, without adding the actual `<template>` element to the DOM.
-   When the corresponding `</template>` end tag is discovered, parsing resumes as normal. 
+   When the corresponding `</template>` end tag is discovered, parsing resumes as normal.
+1. The `IDREF` is resolved using the tree scope where the template was discovered (which can be a shadow root).
 1. A patch whose target is not found is parsed as a normal `<template>` element and remains in the DOM. There is no further change detection to try to match it, and the author is responsible for that kind of change detection if they so choose.
-   This is equivalent to trying to setting the `innerHTML` of a DOM element that doesn't exist.
-1. `element.patch(response, { signal })` streams the content of an HTML response directly into an element. `signal` is an `AbortSignal` so that the process can be canceled. `<template patchfor>` snippets inside of this response would be scoped to the target element.
-1. `documentOrShadowRoot.patch(response, { signal })` takes a response, decodes it as HTML based on the document's encoding, and uses the discovered `<template patchfor>` elements to patch the target document/shadow-root. `signal` is an `AbortSignal` so that the process can be canceled.
-1. `element.currentPatch` returns (null or) an object that reflects the current status of a patch, and allows aborting it. It has a `signal` (an `AbortSignal`), and a `finished` promise that can resolve/reject based on the patch process.
-1. The "patch" event is fired when an element is being patched, with the same timing as mutation observer callbacks and "slotchange" events.
+   This is equivalent to trying to setting the `innerHTML` of a DOM element that doesn't exist. A `patcherror` event is fired.
+1. `node.patchSelf()` streams the content of an HTML stream directly into an element by creating a `WritableStream`. (Alternative names: `patch` or `patchReplace`).
+1. `node.patchAll()` creates a `WritableStream`, which in turns parses the HTML contents streamed to it, and extracts `<template patchfor>` elements from it, streaming it to the correct targets. ID lookup is scoped to the target node. (Alternative name: `patchInterleaved` or `patchSplice`.
+2. `node.patchBetween`, `node.patchAfter` and `node.patchBefore` patch a range of children of an element, by first removing what's between the given nodes and then inserting the result of the stream.
+3. All the `node.patch*` functions return a `WritableStream` that can accept bytes or strings. Other types are stringified. Strings are parsed directly, bytes are decoded using the document's character set.
+1. `element.currentPatch` returns (null or) an object that reflects the current status of a patch, and allows aborting it or waiting for it to finish.
+1. The `patch` event is fired when an element is being patched, with the same timing as mutation observer callbacks and "slotchange" events. It allows intercepting a patch and injecting a `TransformStream` into it.
 1. The `:patching` pseudo-class is activated on the element during patch.
 1. The `patchsrc` attribute allows fetching the content of the patch from a different URL, using a cors-anonymous fetch (allowing `crossorigin`/`referrerpolicy` attributes and all that jazz).
-1. While the content is being fetched, the element receives a `:loading` pseudo-class.
-1. If fetching failed, the template's inline content is used for the patch as fallback, and the element receives a `:loading-error` pseudo-class.
-1. If `patchsrc` is present without a `patchfor`, this template is considered to be a patch for its parent.
-1. Nested patch ID lookup is scoped. So, e.g., `<template patchfor=a><template patchfor=b>content</template></template>`, would update the content of `#a #b`.
+1. While the content is being fetched, the element receives a `:patch-loading` pseudo-class.
+1. The template's inline content is used for the patch as fallback while it is being fetch, and the element receives a `:loading-error` pseudo-class if fetching failed.
+
+##### Even more details
+
+1. From an HTML parser internals point of view, a new fragment parser is created for each patch with the patch target as the context node, and the output of this parsing is inserted directly to that target.
+1. If trusted types are present in the document, parsed contents are buffered (not streaming) and pass through the trusted types system before being inserted to the DOM. Using this without trusted types can be done by capturing the `patch` event and intercepting it.
+2. `patchsrc` requires the same CSP privileges as a script.
 
 ### Part 2: Route matching
 
