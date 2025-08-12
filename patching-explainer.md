@@ -46,7 +46,7 @@ byteOrTextStream.pipeTo(elementOrShadowRoot.patch({santizer}));
 byteOrTextStream.pipeTo(elementOrShadowRoot.patchUnsafe({santizer}));
 ```
 
-The API shape and naming is open to discussion. See #42.
+The API shape and naming is open to discussion. See https://github.com/WICG/declarative-partial-updates/issues/42.
 
 ## Interleaved patching
 
