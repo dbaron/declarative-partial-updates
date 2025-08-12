@@ -36,7 +36,7 @@ byteOrTextStream.pipeTo(writable);
 
 A few details about one-off patching:
 - Trying to patch an element that is currently being patched would abort the original stream.
-- It is unclear whether patching should execute `<script>` elements found in the patch. It would potentially be an opt-in. See #40.
+- It is unclear whether patching should execute `<script>` elements found in the patch. It would potentially be an opt-in. See https://github.com/WICG/declarative-partial-updates/issues/40.
 - Replacing the contents of an existing script would only execute the script if the original contents were empty (equivalent to `innerHTML` behavior).
 
 
