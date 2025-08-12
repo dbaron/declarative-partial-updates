@@ -103,7 +103,7 @@ const writable = documentOrElementOrShadowTree.patchInterleavedUnsafe()
 
 When calling `patchInterleaved`, discovered patches are applied to the target container node, and the rest of the HTML is discarded.
 
-## Potential nhancement - patch contents from URL
+## Potential enhancement - patch contents from URL
 
 In addition to patching from a stream or interleaved in HTML, there are use-cases for patching by fetching a URL.
 This can be done with a `patchsrc` attribute, or by reusing the `src` attribute if we go with the `<script>` element.
