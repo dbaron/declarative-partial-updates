@@ -160,9 +160,9 @@ No
 
 Yes to some extent.
 Because this is a new API surface for importing HTML, this imported HTML can have
-various ways to execute scripts.
-This is mitigated in several ways:
-1. 
+various ways to execute scripts. This is mitigated by making sure that the new API is implemented in a way that supports the sanitizer, and a new trusted-types enabler will be added for custom sanitation.
+In addition, the rules of parsing this HTML are similar to the existing `setHTML` and `setHTMLUnsafe` methods, which already includes various ways of protecting against script execution, e.g. not executing a
+script element that was already executed. Some of these details are discussed in https://github.com/WICG/declarative-partial-updates/issues/40.
 
 16.  Do features in this specification allow an origin to access other devices?
 
