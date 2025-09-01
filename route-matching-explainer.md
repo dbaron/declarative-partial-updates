@@ -6,7 +6,7 @@ However, when it comes to same-document navigations, developers can only use eve
 
 While running script to manage navigations has its place and is here to stay, it has some drawbacks:
 - A user script that is run during an interaction is more likely to cause jank than browser-internal features.
-- lifecycle management is a bug-prone area of software. Declaring the desired outcome rather than managing it explicitly with events can improve robustness of web apps by removing a lot of these fine details from user code.
+- Lifecycle management is a bug-prone area of software. Declaring the desired outcome rather than managing it explicitly with events can improve robustness of web apps by removing a lot of these fine details from user code.
 
 ## Navigation-aware styling
 ### Framework routers
