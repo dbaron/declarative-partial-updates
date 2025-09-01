@@ -110,7 +110,7 @@ To do this today, this mapping has to be done using events:
 ```js
 settingsDialog.addEventListener("open", () => navigation.push("/settings");
 settingsDialog.addEventListener("close", () => navigation.back());
-navigation.addEventListener("event", e => {
+navigation.addEventListener("navigate", e => {
   if (new URL(e.destination.url).pathname === "/settings") {
     e.intercept({ handler: () => settingsDialog.open() });
   }
