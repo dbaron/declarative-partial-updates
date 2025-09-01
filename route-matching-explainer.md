@@ -2,7 +2,7 @@
 
 # Motivation and Use Cases
 The web platform provides primitives for performing navigations declaratively, without the developer having to listen to events and curate the navigation as it is ongoing.
-However, when it comes to same-document navigations, developers can only use event-driven scripts for the task, either through click capturing, navigation API, or by delegating this broilerplate work to frameworks.
+However, when it comes to same-document navigations, developers can only use event-driven scripts for the task, either through click capturing, navigation API, or by delegating this boilerplate work to frameworks.
 
 While running script to manage navigations has its place and is here to stay, it has some drawbacks:
 - A user script that is run during an interaction is more likely to cause jank than browser-internal features.
@@ -124,7 +124,7 @@ For example, a URL retrieved from a QR code should not only scroll to the right 
 While the web platform allows matching between scrolling and URLs using ID mapping, this is:
 - limited to hash-fragments only, while some of these URL changes are better expressed by URLs that are seen by the server (like path changes).
 - Uni-directional. The user scrolling to a fragment doesn't automatically change the URL
-- Loading content lazily/predicticely based on element proximity to the viewport is cumbersome, and requires careful use of `IntersectionObserver` or `content-visiblity` (including the `contentvisibilityautostatechange` event).
+- Loading content lazily based on element proximity to the viewport is cumbersome, and requires careful use of `IntersectionObserver` or `content-visiblity` (including the `contentvisibilityautostatechange` event).
 
 # The proposed solution: 
 
