@@ -119,7 +119,7 @@ navigation.addEventListener("event", e => {
 
 ## Scroll/gesture-based navigation with lazy-loading
 Some modern UIs (e.g. Instagram, TikTok) use scroll-snapping or carousels to navigate between app fragments in a way that maps nicely to URL navigation.
-For example, a URL retrieved from a QR code should not only scroll to the right app fragment but only render the correct state from the server.
+For example, a URL retrieved from a QR code should not only scroll to the right app fragment but also render the correct state from the server.
 
 While the web platform allows matching between scrolling and URLs using ID mapping, this is:
 - limited to hash-fragments only, while some of these URL changes are better expressed by URLs that are seen by the server (like path changes).
