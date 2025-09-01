@@ -232,7 +232,7 @@ When an element is bound to a route+param, it is:
 
 <script>
 // Lazily load route content
-document.routeMap.get("feed").param("feedid").addEventListener("prepare", e =>
+document.routeMap.get("feed").addEventListener("prepare", e =>
     fetch(`/feed-content?id=${e.value}`));
 </script>
 ```
