@@ -1,5 +1,9 @@
 # Declarative Route Matching
 
+Note: this discusses route-matching at a higher level.
+The syntax examples are only examples.
+The actual syntax is discussed in https://github.com/WICG/declarative-partial-updates/issues/46 and https://github.com/w3c/csswg-drafts/issues/12594.
+
 # Motivation and Use Cases
 The web platform provides primitives for performing navigations declaratively, without the developer having to listen to events and curate the navigation as it is ongoing.
 However, when it comes to same-document navigations, developers can only use event-driven scripts for the task, either through click capturing, navigation API, or by delegating this boilerplate work to frameworks.
