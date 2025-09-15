@@ -5,12 +5,8 @@ The syntax examples are only examples.
 The actual syntax is discussed in https://github.com/WICG/declarative-partial-updates/issues/46 and https://github.com/w3c/csswg-drafts/issues/12594.
 
 # Motivation and Use Cases
-The web platform provides primitives for performing navigations declaratively, without the developer having to listen to events and curate the navigation as it is ongoing.
-However, when it comes to same-document navigations, developers can only use event-driven scripts for the task, either through click capturing, navigation API, or by delegating this boilerplate work to frameworks.
 
-While running script to manage navigations has its place and is here to stay, it has some drawbacks:
-- A user script that is run during an interaction is more likely to cause jank than browser-internal features.
-- Lifecycle management is a bug-prone area of software. Declaring the desired outcome rather than managing it explicitly with events can improve robustness of web apps by removing a lot of these fine details from user code.
+Provide a way to respond to navigations and route-changes immediately and without requiring to hook into the navigation lifecycle.
 
 ## Navigation-aware styling
 ### Framework routers
@@ -47,12 +43,16 @@ function Navbar() {
 What if it could look like this?
 ```html
 <style>
-  nav {
-    a:navigating-to(home)::after { content: "spinner.gif"; };
-    a:navigating-to(about) { color: grey; }
+  @route(to: home) {
+     a:remote-link + spinner { opacity: 100%; }
+  }
+
+  @route(to: about) {
+     a:remote-link { color: grey }
   }
 </style>
 <nav>
+  <a href="/">Home</a>
   <a href="/about">About</a>
 </nav>
 ```
@@ -104,50 +104,10 @@ However, some parts of the shell often still have some dynamic parts that appear
 
 For example, a chat widget or members area might only appear in certain pages. A "related" `<aside>` element might only appear in article pages.
 
-## Mapping between "Open/closed" UI elements and URLs
-Dialog/popover and other "openable" UI elements are currently openable by a button and something like a command invoker.
-However, sometimes an author would want to reflect this UI state in the URL, and have that URL lead to that UI state.
-
-For example, having the URL `/settings` open the settings dialog, and having the settings dialog open shareable as the `/settings` URL.
-
-To do this today, this mapping has to be done using events:
-```js
-settingsDialog.addEventListener("open", () => navigation.push("/settings");
-settingsDialog.addEventListener("close", () => navigation.back());
-navigation.addEventListener("navigate", e => {
-  if (new URL(e.destination.url).pathname === "/settings") {
-    e.intercept({ handler: () => settingsDialog.open() });
-  }
-});
-```
-
-## Scroll/gesture-based navigation with lazy-loading
-Some modern UIs (e.g. Instagram, TikTok) use scroll-snapping or carousels to navigate between app fragments in a way that maps nicely to URL navigation.
-For example, a URL retrieved from a QR code should not only scroll to the right app fragment but also render the correct state from the server.
-
-While the web platform allows matching between scrolling and URLs using ID mapping, this is:
-- limited to hash-fragments only, while some of these URL changes are better expressed by URLs that are seen by the server (like path changes).
-- Uni-directional. The user scrolling to a fragment doesn't automatically change the URL
-- Loading content lazily based on element proximity to the viewport is cumbersome, and requires careful use of `IntersectionObserver` or `content-visiblity` (including the `contentvisibilityautostatechange` event).
-
-# The proposed solution: 
-
-## Overview
-Proposing to include a few specific client-side routing capabilities in the web platform, that should enable:
-- CSS-first support for optimistic, pending and transition UI, as well as for some simple route-matching styles. This is designed to be useful either with or without a framework client-side router.
-- HTML-first support for integration between user interactions (scroll-snapping, popovers/dialogs) and URL navigation.
-- A set of rudimentary out-of-the-box routing capabilities for apps that don't rely on a full-fledged framework-based router.
-- Together with declarative patching, provide a complete declarative lifecycle for updating a document based on navigations without a full refresh.
-- Work in the context of the whole document or scoped to a component
-
-## The basics
-- A "router" is a set of rules.
-- A rule can either apply to a single URL, or to a transition between two URLs (a navigation)
-- A router is scoped to the whole document or to an element.
-
-Each rule would always have the following:
-- A name (to be able to identify it in CSS or JS)
-- A "matcher" or "selector". Either a URL pattern that matches it to the current URL, or 1-2 URL patterns that match it with an ongoing navigation.
+# The initial proposed solution: HTML route map with CSS reflection
+- Routes are declared in HTML, to avoid requiring all the stylesheets to know the different route URLs or leak those URLs directly, and also to allow future enhancements that are not necessarily style-based.
+- A route at is core is a named `URLPattern`.
+- Matching a route can be toggle-like event target, similar to media-query matching. It can help responding to specific route changes without having to intercept *all* navigations.
 
 ```html
 <head>
@@ -181,12 +141,8 @@ Naming a set of these rules in HTML already gives us something that CSS can buil
   #chat-widget { display: none; } 
 }
 
-#dashboard:route(settings) {
-  .settings-button { display:none; }
-}
-
 nav {
-  a:navigation-to(pending) .spinner {
+  a:remote-link(pending) .spinner {
     animation: spin;
   }
 }
@@ -197,51 +153,16 @@ nav {
 }
 
 /* or be route-specific */
-@view-transition {
-  navigation: route(between-articles);
-  types: slide-3d;
+@route(to: article) {
+  @view-transition {
+    navigation: auto;
+    types: slide-3d;
+  }
 }
 ```
 
-Having the simple route-matching with CSS reflection is likely the first self-contained deliverable from this proposal.
-
-## Element/route binding
-
-While CSS is a great fit for some use cases, including ones that display and hide visual elements based on route, this doesn't work well
-with UI elements that are more than visual, like dialogs and popovers, or elements that can be scrolled to.
-
-To achieve the uses cases for dialog or scroll-based navigation in a way that works well with URL navigation, proposing to allow "binding" an element to a route and route params, in a similar way to command invokers (though bidirectional).
-When an element is bound to a route+param, it is:
-- opened/scrolled to when navigating to that route+param
-- Changes the URL based on the route rules when opened by the user
-- Emits events that help lazily load the content for the route if the scrolling element is close to the viewport
-
-```html
-<script type=routemap>
-[
-  {"name": "feed", "pattern": {"pathname": "/feed/:feedid"} },
-  {"name": "settings", "pattern": {"search": "?settings=show"}}
-]
-</script>
-<main class="app-carousel">
-  <...>
-  <section route=feed data-feedid="feed12"></section>
-  <...>
-</main>
-<dialog route=settings>Settings</dialog>
-<!-- This would open the settings dialog -->
-<a href="?settings=show">Settings</a>
-<!-- This would scroll the app carousel to feed 12 -->
-<a href="/feed/feed12">Feed 12</a>
-
-<script>
-// Lazily load route content
-document.routeMap.get("feed").addEventListener("prepare", e =>
-    fetch(`/feed-content?id=${e.value}`));
-</script>
-```
-
-## Basic interception & history-handling
+# Potential future enhancements
+## Declarative interception & history-handling
 
 In addition to CSS reflection, some basic navigation interception capabilities can be provided out of the box:
 - Intercepting without side effects (navigations that just change style)
@@ -290,13 +211,92 @@ The stream of interleved patches is fetched from the URL (or from the service wo
 
 When combined with scroll-based navigation, the patch stream can be fetched lazily as the bound element approaches the viewport, making lazy loading of scrollable content easier.
 
+## Mapping between "Open/closed" UI elements and URLs
+Dialog/popover and other "openable" UI elements are currently openable by a button and something like a command invoker.
+However, sometimes an author would want to reflect this UI state in the URL, and have that URL lead to that UI state.
+
+For example, having the URL `/settings` open the settings dialog, and having the settings dialog open shareable as the `/settings` URL.
+
+To do this today, this mapping has to be done using events:
+```js
+settingsDialog.addEventListener("open", () => navigation.push("/settings");
+settingsDialog.addEventListener("close", () => navigation.back());
+navigation.addEventListener("navigate", e => {
+  if (new URL(e.destination.url).pathname === "/settings") {
+    e.intercept({ handler: () => settingsDialog.open() });
+  }
+});
+```
+
+## View-transition to preview
+Use the next route's style as a "preview" state of a view transition, and start the navigation view-transition immediately to that preview before continuing to the new state.
+This allows immediate feedback for cross-document view transitions, in a way that fits seamlessly with the overall transitions.
+
+## Scroll/gesture-based navigation with lazy-loading
+Some modern UIs (e.g. Instagram, TikTok) use scroll-snapping or carousels to navigate between app fragments in a way that maps nicely to URL navigation.
+For example, a URL retrieved from a QR code should not only scroll to the right app fragment but also render the correct state from the server.
+
+While the web platform allows matching between scrolling and URLs using ID mapping, this is:
+- limited to hash-fragments only, while some of these URL changes are better expressed by URLs that are seen by the server (like path changes).
+- Uni-directional. The user scrolling to a fragment doesn't automatically change the URL
+- Loading content lazily based on element proximity to the viewport is cumbersome, and requires careful use of `IntersectionObserver` or `content-visiblity` (including the `contentvisibilityautostatechange` event).
+
+## Element/route binding
+
+While CSS is a great fit for some use cases, including ones that display and hide visual elements based on route, this doesn't work well
+with UI elements that are more than visual, like dialogs and popovers, or elements that can be scrolled to.
+
+To achieve the uses cases for dialog or scroll-based navigation in a way that works well with URL navigation, proposing to allow "binding" an element to a route and route params, in a similar way to command invokers (though bidirectional).
+When an element is bound to a route+param, it is:
+- opened/scrolled to when navigating to that route+param
+- Changes the URL based on the route rules when opened by the user
+- Emits events that help lazily load the content for the route if the scrolling element is close to the viewport
+
+```html
+<script type=routemap>
+[
+  {"name": "feed", "pattern": {"pathname": "/feed/:feedid"} },
+  {"name": "settings", "pattern": {"search": "?settings=show"}}
+]
+</script>
+<main class="app-carousel">
+  <...>
+  <section route=feed data-feedid="feed12"></section>
+  <...>
+</main>
+<dialog route=settings>Settings</dialog>
+<!-- This would open the settings dialog -->
+<a href="?settings=show">Settings</a>
+<!-- This would scroll the app carousel to feed 12 -->
+<a href="/feed/feed12">Feed 12</a>
+
+<script>
+// Lazily load route content
+document.routeMap.get("feed").addEventListener("prepare", e =>
+    fetch(`/feed-content?id=${e.value}`));
+</script>
+```
 
 # Summary
-- Declarative route matching is about mapping between UI (style, openables, scroll) and URL navigation.
-- It is done by using an element or document-scoped set of rules that apply to a `URLPattern` or a pair,
-  and then mapping those rules to CSS declarations or scrollable/openable elements.
-- It can be used to offload the pending/optimistic aspect of navigations to the browser, also when using a framework router for content updates.
-- It is also designed in a way that can be used as a standalone router, when the route changes are limited to UI/style, alongside patching, or by integrating JS-based routing with its new events.
+- Declarative route matching is about mapping between UI and URL navigation.
+- It is done by naming `URLPattern`s as routes, and mapping them to style (and later on to HTML-UI).
+- It can be used to offload the pending/optimistic aspect of navigations to the browser, also when using a framework router for the actual content updates.
+- It is also designed in a way that can be extended to be as a simple standalone router, when the route changes are limited to UI/style, alongside patching, or by integrating JS-based routing with its new events.
+
+# Alternatives considered
+
+## Just use existing JS
+It is possible today to polyfill most of these behaviors with a framework, or with custom states and web components, or by updating HTML attributes to reflect navigation state.
+However, incorporating this into the browser can shave off a lot of JS, and even to no JS in some cases, in a place that is generally performance sensitive and very user-visible (an interaction causing a navigation).
+In addition, the more this is coupled with navigation experiences, the harder it is to script in a way that's both performant and developer friendly.
+
+
+## Contain this in CSS
+Since the first use case for routes is driven by CSS, it is tempting to contain everything in CSS, including the URL patterns themselves.
+However, this means that:
+- all the 3rd party stylesheets that work with routes have access to the raw URL by defining their own URL patterns
+- We would need to create an HTML version of this once we connect routes with HTML UI
+- CSS "feels" like the wrong place to include a route map (arguably).
 
 
 ## [Self-Review Questionnaire: Security and Privacy](https://w3c.github.io/security-questionnaire/)
