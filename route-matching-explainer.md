@@ -279,6 +279,13 @@ document.routeMap.get("feed").addEventListener("prepare", e =>
 </script>
 ```
 
+## Element-scoped route maps
+
+Allow intercepting navigations and styling current routes in a way that's encapsulated for a certain element.
+This can allow using navigation-like features inside a component without necessarily affecting the document's URL/state.
+
+More details on that TBD.
+
 # Summary
 - Declarative route matching is about mapping between UI and URL navigation.
 - It is done by naming `URLPattern`s as routes, and mapping them to style (and later on to HTML-UI).
