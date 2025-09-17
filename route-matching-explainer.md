@@ -43,11 +43,11 @@ function Navbar() {
 What if it could look like this?
 ```html
 <style>
-  @route(to: home) {
+  @route (to: home) {
      a:remote-link + spinner { opacity: 100%; }
   }
 
-  @route(to: about) {
+  @route (to: about) {
      a:remote-link { color: grey }
   }
 </style>
@@ -137,7 +137,7 @@ For example, a chat widget or members area might only appear in certain pages. A
 
 Naming a set of these rules in HTML already gives us something that CSS can build on:
 ```css
-@route(home) {
+@route (home) {
   #chat-widget { display: none; } 
 }
 
@@ -153,7 +153,7 @@ nav {
 }
 
 /* or be route-specific */
-@route(to: article) {
+@route (to: article) {
   @view-transition {
     navigation: auto;
     types: slide-3d;
