@@ -299,6 +299,22 @@ It is possible today to polyfill most of these behaviors with a framework, or wi
 However, incorporating this into the browser can shave off a lot of JS, and even to no JS in some cases, in a place that is generally performance sensitive and very user-visible (an interaction causing a navigation).
 In addition, the more this is coupled with navigation experiences, the harder it is to script in a way that's both performant and developer friendly.
 
+Another big issue with using JS is that it requires the caller to properly clean up state. This can be tricky when cross-document navigations are involved, as it's not exactly clear when the state needs to be cleared.
+
+```js
+navigation.addEventListener("navigate", async event => {
+  const next_route_name = get_route_from(event.destination);
+  document.documentElement.classList.add("show-preview");
+  // Not intercepted, so need to clean it up. When? Maybe after pagehide? Will it actually run? Would developers remember to do this?
+  await new Promise(resolve => window.addEventListener("pagehide", resolve);
+  document.documentElement.classList.remove("show-preview");
+});
+
+addEventListener("pagehide", () => {
+  // 
+});
+```
+
 
 ## Contain this in CSS
 Since the first use case for routes is driven by CSS, it is tempting to contain everything in CSS, including the URL patterns themselves.
