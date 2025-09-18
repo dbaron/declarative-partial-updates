@@ -73,6 +73,23 @@ navigation.addEventListener("navigate", e => {
 });
 ```
 
+## Two-phase preview view transitions
+
+See https://github.com/w3c/csswg-drafts/issues/12829
+
+When performing a cross-document view-transition, the transition often has to delay until the next document is ready.
+By using route-matching, we can render a "preview" of the new state using style only, and transition to that instantly, before continuing to the final content.
+
+```css
+@route (to: article) {
+   .article-skeleton { display: block }
+}
+
+@navigation {
+  view-transition: with-preview;
+}
+```
+
 ## Declarative same-document view transitions
 
 In order to integrate either of the above with view-transitions, the author has to either rely on the framework to bake view-transitions into the router, or add even more complexity to the interception.
