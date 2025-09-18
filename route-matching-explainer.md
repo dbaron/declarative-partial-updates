@@ -245,12 +245,6 @@ navigation.addEventListener("navigate", e => {
 });
 ```
 
-## View-transition to preview
-Use the next route's style as a "preview" state of a view transition, and start the navigation view-transition immediately to that preview before continuing to the new state.
-This allows immediate feedback for cross-document view transitions, in a way that fits seamlessly with the overall transitions.
-
-See also https://github.com/whatwg/html/issues/10616
-
 ## Scroll/gesture-based navigation with lazy-loading
 Some modern UIs (e.g. Instagram, TikTok) use scroll-snapping or carousels to navigate between app fragments in a way that maps nicely to URL navigation.
 For example, a URL retrieved from a QR code should not only scroll to the right app fragment but also render the correct state from the server.
