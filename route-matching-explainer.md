@@ -315,6 +315,7 @@ However, incorporating this into the browser can shave off a lot of JS, and even
 In addition, the more this is coupled with navigation experiences, the harder it is to script in a way that's both performant and developer friendly.
 
 Another big issue with using JS is that it requires the caller to properly clean up state. This can be tricky when cross-document navigations are involved, as it's not exactly clear when the state needs to be cleared.
+(But it does need to be cleared since the page might be restored from BFCache.)
 
 ```js
 navigation.addEventListener("navigate", async event => {
