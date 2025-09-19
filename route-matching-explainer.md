@@ -128,7 +128,8 @@ For example, a chat widget or members area might only appear in certain pages. A
 
 ```html
 <head>
-  <!-- This routemap applies to the whole document. It doesn't interfere with a framework router because it doesn't intercept navigations. -->
+  <!-- This routemap applies to the whole document. It doesn't interfere
+       with a framework router because it doesn't intercept navigations. -->
   <script type=routemap>
      {"rules": [
         {"name": "home", "pattern": {"pathname": "/" } }}, 
@@ -164,7 +165,8 @@ nav {
   }
 }
 
-/* navigation-based view-transition can work out of the box because we can count on the final CSS state */
+/* navigation-based view-transition can work out of the box
+   because we can count on the final CSS state */
 @view-transition {
   navigation: auto;
 }
@@ -190,10 +192,12 @@ This complements the CSS reflection and element binding features, as with those 
 ```html
 </head>
 <body>
-  <!-- A scoped router would only intercept navigations that originated from within the scope -->
+  <!-- A scoped router would only intercept navigations that
+       originated from within the scope -->
   <section id=dashboard>
     <!-- This can work without a JS router at all!
-         Linking to `/dashboard/settings` would replace the URL and display the settings without event-driven scripting -->
+         Linking to `/dashboard/settings` would replace the URL and
+         display the settings without event-driven scripting -->
     <script type=routemap>
      {"rules": [
         {"name": "settings", "pattern": {"pathname": "/dashboard/settings"},
@@ -316,7 +320,9 @@ Another big issue with using JS is that it requires the caller to properly clean
 navigation.addEventListener("navigate", async event => {
   const next_route_name = get_route_from(event.destination);
   document.documentElement.classList.add("show-preview");
-  // Not intercepted, so need to clean it up. When? Maybe after pagehide? Will it actually run? Would developers remember to do this?
+  // Not intercepted, so need to clean it up. When? Maybe after
+  // pagehide? Will it actually run? Would developers remember to
+  // do this?
   await new Promise(resolve => window.addEventListener("pagehide", resolve);
   document.documentElement.classList.remove("show-preview");
 });
