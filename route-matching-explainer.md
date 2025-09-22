@@ -132,10 +132,10 @@ For example, a chat widget or members area might only appear in certain pages. A
        with a framework router because it doesn't intercept navigations. -->
   <script type=routemap>
      {"rules": [
-        {"name": "home", "pattern": {"pathname": "/" } }}, 
-        {"name": "about", "pattern": {"pathname": "/about" }},
-        {"name": "article", "pattern": {"pathname": "/article/:article-id" } }
-        {"name": "between-articles", "between": ["article", "article"] } }
+        {"name": "home", "pattern": {"pathname": "/" } },
+        {"name": "about", "pattern": {"pathname": "/about" } },
+        {"name": "article", "pattern": {"pathname": "/article/:article-id" } },
+        {"name": "between-articles", "between": ["article", "article"] }
      ]}
   </script>
 </head>
@@ -144,7 +144,7 @@ For example, a chat widget or members area might only appear in certain pages. A
     <!-- This routemap applies to the section -->
     <script type=routemap>
      {"rules": [
-        {"name": "settings", "pattern": {"pathname": "/dashboard/settings" } }}
+        {"name": "settings", "pattern": {"pathname": "/dashboard/settings" } }
      ]} 
     </script>
   </section>
@@ -217,11 +217,11 @@ Together with the [patching](https://github.com/WICG/declarative-partial-updates
   <script type=routemap>
      {
         "rules": [
-        {"pattern": {"pathname": "/*" }, "patchSource": "/content/patch", "mode": "same-document" }, 
-        {"name": "home", "pattern": {"pathname": "/" } }}, 
-        {"name": "about", "pattern": {"pathname": "/about" }},
-        {"name": "article", "pattern": {"pathname": "/article/:article-id" } }
-        {"name": "between-articles", "between": ["article", "article"] } }
+        {"pattern": {"pathname": "/*" }, "patchSource": "/content/patch", "mode": "same-document" },
+        {"name": "home", "pattern": {"pathname": "/" } },
+        {"name": "about", "pattern": {"pathname": "/about" } },
+        {"name": "article", "pattern": {"pathname": "/article/:article-id" } },
+        {"name": "between-articles", "between": ["article", "article"] }
      ]}
   </script>
 </head>
@@ -271,10 +271,10 @@ When an element is bound to a route+param, it is:
 
 ```html
 <script type=routemap>
-[
+{"rules": [
   {"name": "feed", "pattern": {"pathname": "/feed/:feedid"} },
-  {"name": "settings", "pattern": {"search": "?settings=show"}}
-]
+  {"name": "settings", "pattern": {"search": "?settings=show"} }
+]}
 </script>
 <main class="app-carousel">
   <...>
