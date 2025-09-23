@@ -134,8 +134,7 @@ For example, a chat widget or members area might only appear in certain pages. A
      {"rules": [
         {"name": "home", "pattern": {"pathname": "/" } },
         {"name": "about", "pattern": {"pathname": "/about" } },
-        {"name": "article", "pattern": {"pathname": "/article/:article-id" } },
-        {"name": "between-articles", "between": ["article", "article"] }
+        {"name": "article", "pattern": {"pathname": "/article/:article-id" } }
      ]}
   </script>
 </head>
@@ -220,8 +219,7 @@ Together with the [patching](https://github.com/WICG/declarative-partial-updates
         {"pattern": {"pathname": "/*" }, "patchSource": "/content/patch", "mode": "same-document" },
         {"name": "home", "pattern": {"pathname": "/" } },
         {"name": "about", "pattern": {"pathname": "/about" } },
-        {"name": "article", "pattern": {"pathname": "/article/:article-id" } },
-        {"name": "between-articles", "between": ["article", "article"] }
+        {"name": "article", "pattern": {"pathname": "/article/:article-id" } }
      ]}
   </script>
 </head>
