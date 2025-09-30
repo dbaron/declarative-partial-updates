@@ -20,9 +20,11 @@ A patch can be streamed directly into that position using JavaScript, and multip
 ## Anatomy of a patch
 
 A patch is a [stream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API) that targets a [parent node](https://developer.mozilla.org/en-US/docs/Web/API/Node) (usually an element, but potentially a shadow root).
-It can handle strings or bytes. When it receives bytes, it decodes them using the node's document's charset. Anything other than strings or bytes is stringified.
+It can handle strings, bytes, or `TrustedHTMLString`. When it receives bytes, it decodes them using UTF8.
+Anything other than strings or bytes is stringified.
 
 When a patch is active, it is essentially a [WritableStream](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream) that feeds a [fragment-mode parser](https://html.spec.whatwg.org/multipage/parsing.html#html-fragment-parsing-algorithm) with strings from that stream.
+Unlike the usual fragment parser, nodes are inserted directly into the target and not buffered into the fragment first. The fragment parser is only used to set up the parser context.
 It is similar to calling `document.write()`, scoped to an node.
 
 ## One-off patching
@@ -30,23 +32,21 @@ It is similar to calling `document.write()`, scoped to an node.
 The most atomic form of patching is opening a container node for writing, creating a `WritableStream` for it.
 This can be done with an API as such:
 ```js
-const writable = elementOrShadowRoot.patch();
+const writable = elementOrShadowRoot.streamHTML();
 byteOrTextStream.pipeTo(writable);
 ```
 
 A few details about one-off patching:
 - Trying to patch an element that is currently being patched would abort the original stream.
-- It is unclear whether patching should execute `<script>` elements found in the patch. It would potentially be an opt-in. See https://github.com/WICG/declarative-partial-updates/issues/40.
 - Replacing the contents of an existing script would only execute the script if the original contents were empty (equivalent to `innerHTML` behavior).
-
 
 To account for HTML sanitation, this API would have an "Unsafe" version and would accept a sanitizer in its option, like [`setHTML`](https://developer.mozilla.org/en-US/docs/Web/API/Element/setHTML):
 ```js
-byteOrTextStream.pipeTo(elementOrShadowRoot.patch({santizer}));
-byteOrTextStream.pipeTo(elementOrShadowRoot.patchUnsafe({santizer}));
+byteOrTextStream.pipeTo(elementOrShadowRoot.streamHTML({santizer}));
+byteOrTextStream.pipeTo(elementOrShadowRoot.streamHTMLUnsafe({santizer}));
 ```
 
-The API shape and naming is open to discussion. See https://github.com/WICG/declarative-partial-updates/issues/42.
+Also see detailed discussion at https://github.com/whatwg/html/issues/11669, will amend this explainer once that's settled.
 
 ## Interleaved patching
 
@@ -54,23 +54,21 @@ In addition to invoking streaming using script, this proposal includes patching 
 parses its content as raw text, finds the target element using attributes, and reroutes the raw text content to the target element:
 
 ```html
-<option patchid=gallery>Loading...</section>
+<section outlet=gallery>Loading...</section>
 
 <!-- later -->
-<template patchfor=gallery>Actual gallery content</template>
+<script type="patch" contentfor=gallery>Actual gallery content</template>
 ```
 
-* Note: there is an ongoing discussion whether this should be a `<script>` element instead. See https://github.com/whatwg/html/issues/11542.
-
 A few details about interleaved patching:
-- If a target is not found, the patching element remains in the DOM.
+- If an outlet is not found, the patching element remains in the DOM.
 - The first patch for a target in the document stream replaces its content, and the next ones append. This allows interleaved streaming into the same target.
-- If the patching element is not a direct child of `<body>`, the target element has to have a common ancestor with the patching element's parent.
-- The patching element reference is tree scoped.
+- If the patching element is not a direct child of `<body>`, the outlet has to have a common ancestor with the patching element's parent.
+- The patching element has to be in the same tree scope as the outlet.
 
 ## Reflection
 
-Besides invoking a patch, there should be a few ways to reflect about the current status of patching and receive events/callbacks when a patch is underway.
+Besides applying a patch, there should be a few ways to reflect about the current status of patching and receive events/callbacks when a patch is underway.
 
 ### CSS reflection
 See https://github.com/w3c/csswg-drafts/issues/12579 and https://github.com/w3c/csswg-drafts/issues/12578.
