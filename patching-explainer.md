@@ -50,14 +50,14 @@ Also see detailed discussion at https://github.com/whatwg/html/issues/11669, wil
 
 ## Interleaved patching
 
-In addition to invoking streaming using script, this proposal includes patching interleaved inside HTML content. An element such as `<script>` or `<template>` would have a special attribute that
+In addition to invoking streaming using script, this proposal includes patching interleaved inside HTML content. A `<template>` would have a special attribute that
 parses its content as raw text, finds the target element using attributes, and reroutes the raw text content to the target element:
 
 ```html
 <section outlet=gallery>Loading...</section>
 
 <!-- later -->
-<script type="patch" contentfor=gallery>Actual gallery content</template>
+<template patchforr=gallery>Actual gallery content</template>
 ```
 
 A few details about interleaved patching:
@@ -104,7 +104,7 @@ When calling `patchInterleaved`, discovered patches are applied to the target co
 ## Potential enhancement - patch contents from URL
 
 In addition to patching from a stream or interleaved in HTML, there are use-cases for patching by fetching a URL.
-This can be done with a `patchsrc` attribute, or by reusing the `src` attribute if we go with the `<script>` element.
+This can be done with a `patchsrc` attribute.
 
 Enabling remote fetching of patch content would act as a script in terms of CSP, with a CORS-only request, and would be sanitized with the same HTML/trusted-types restrictions as patching using script.
 
