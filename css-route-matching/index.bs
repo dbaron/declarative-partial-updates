@@ -28,8 +28,6 @@ url: https://html.spec.whatwg.org/multipage/nav-history-apis.html#concept-naviga
 	type: dfn; spec: html; text: transition;
 url: https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigation-activation
 	type: dfn; spec: html; text: activation;
-url: https://html.spec.whatwg.org/multipage/browsing-the-web.html#reveal
-	type: dfn; spec: html; text: reveal a document;
 url: https://html.spec.whatwg.org/multipage/browsing-the-web.html#has-been-revealed
 	type: dfn; spec: html; text: has been revealed;
 </pre>
@@ -138,8 +136,8 @@ as follows:
 
 		* its [=activation=] is non-null,
 			the document's [=has been revealed=] is false or
-			the [=reveal a document=] steps that began when
-			[=has been revealed=] was false are still running,
+			was false at the start of the current [=task=]
+			or [=update the rendering=] steps,
 			and the activation's {{NavigationActivation/from}}'s
 			{{NavigationHistoryEntry/url}}'s
 			is non-null and
@@ -169,8 +167,8 @@ as follows:
 
 		* its [=activation=] is non-null,
 			the document's [=has been revealed=] is false or
-			the [=reveal a document=] steps that began when
-			[=has been revealed=] was false are still running,
+			was false at the start of the current [=task=]
+			or [=update the rendering=] steps,
 			and the activation's {{NavigationActivation/entry}}'s
 			{{NavigationHistoryEntry/url}}'s
 			is non-null and
@@ -181,7 +179,7 @@ as follows:
 	if you start a same-document navigation (e.g., with {{History/pushState}})
 	in the middle of a cross-document navigation.
 
-	ISSUE: Improve integration with [=reveal a document=] rather than monkeypatching it.
+	ISSUE: Improve integration with [=has been revealed=] rather than monkeypatching it.
 
 : <<general-enclosed>>
 ::
