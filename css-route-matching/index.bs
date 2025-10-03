@@ -136,8 +136,7 @@ as follows:
 
 		* its [=activation=] is non-null,
 			the document's [=has been revealed=] is false or
-			was false at the start of the current [=task=]
-			or [=update the rendering=] steps,
+			was false at the start of the current [=task=],
 			and the activation's {{NavigationActivation/from}}'s
 			{{NavigationHistoryEntry/url}}'s
 			is non-null and
@@ -167,8 +166,7 @@ as follows:
 
 		* its [=activation=] is non-null,
 			the document's [=has been revealed=] is false or
-			was false at the start of the current [=task=]
-			or [=update the rendering=] steps,
+			was false at the start of the current [=task=],
 			and the activation's {{NavigationActivation/entry}}'s
 			{{NavigationHistoryEntry/url}}'s
 			is non-null and
