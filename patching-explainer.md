@@ -1,4 +1,4 @@
-# Patching (Partial, interleaved HTML streaming)
+# Interleaved HTML streaming (patching)
 
 ## Motivation
 Streaming of HTML existed from the early days of the web, serving an important purpose for perceieved performance when loading long articles etc.
@@ -54,17 +54,31 @@ In addition to invoking streaming using script, this proposal includes patching 
 parses its content as raw text, finds the target element using attributes, and reroutes the raw text content to the target element:
 
 ```html
-<section outlet=gallery>Loading...</section>
+<section contentname=gallery>Loading...</section>
 
 <!-- later -->
-<template patchforr=gallery>Actual gallery content</template>
+<template contentfor=gallery>Actual gallery content</template>
 ```
 
 A few details about interleaved patching:
-- If an outlet is not found, the patching element remains in the DOM.
-- The first patch for a target in the document stream replaces its content, and the next ones append. This allows interleaved streaming into the same target.
+- If an outlet (an element with `contentname`) is not found, the patch template remains in the DOM.
 - If the patching element is not a direct child of `<body>`, the outlet has to have a common ancestor with the patching element's parent.
-- The patching element has to be in the same tree scope as the outlet.
+- The patch template has to be in the same tree scope as the outlet.
+- By default, the first patch in the stream replaces the entire contents of the outlet, like `replaceChildren`, and the next ones behave like `append`. 
+
+## Manipulating without replacing: `contentcommand`
+
+To allow the patch to manipulate the DOM without replacing all the children, A `contentcommand` attribute
+(values `replaceChildren`, `replaceWith`, `append`, `prepend`, `before`, `after`) can control where the contents of the patch are positioned.
+
+An empty string means the default behavior (`replaceChildren` at start, then `append`).
+
+Those behave with the same semantics as the equivalent DOM manipulation methods, and specifically as defined in https://github.com/whatwg/html/issues/11669.
+
+## Avoiding overwriting with identical content
+
+Some content might need to remain unchanged in certain conditions. For example, displaying a chat widget in all pages but the home, but not reloading it between pages.
+For this, both the outlet and the patch can have a `contentrevision` attribute. If those match, the content is not applied.
 
 ## Reflection
 
@@ -73,7 +87,7 @@ Besides applying a patch, there should be a few ways to reflect about the curren
 ### CSS reflection
 See https://github.com/w3c/csswg-drafts/issues/12579 and https://github.com/w3c/csswg-drafts/issues/12578.
 
-Suggesting to add a couple of pseudo-classes: `:patching` and `:patch-pending`, that reflect the patching status of an element, in addition to a pseudo-class that reflects that an element's parser state is open (regardless of patching).
+Suggesting to add a couple of pseudo-classes: `:updating` and `:pending`, that reflect the patching status of an element, in addition to a pseudo-class that reflects that an element's parser state is open (regardless of patching).
 
 ### JS status
 
@@ -87,10 +101,6 @@ As far as the HTML sanitizer go, it should be made sure that the different new A
 Note that the HTML sanitizer works closely with the HTML parser, so it shouldn't need additional buffering/streaming support as part of the API.
 
 In addition, [Trusted types](https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API) would need streaming support in its policy, potentially by injecting a `TransformStream` into the patch. See https://github.com/w3c/trusted-types/issues/594.
-
-## Enhancement - replace range instead of whole contents
-Some use cases for out of order streaming require replacing parts of the element's children but not other parts, e.g. adding `<meta>` tags to the `<head>` or replacing only some `<option>`s in a `<select>`.
-To achive that, the script and HTML APIs would receive an optional children range to replace, e.g. by having `patchstartafter` and `patchendbefore` attributes, and also allow similar options in the various JS APIs.
 
 ## Enhancement - JS API for interleaved patching
 In addition to invoking interleaved patching as part of the main response, allow parsing an HTML stream and extracting patches from it into an existing element:
