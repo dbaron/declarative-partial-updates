@@ -42,8 +42,8 @@ A few details about one-off patching:
 
 To account for HTML sanitation, this API would have an "Unsafe" version and would accept a sanitizer in its option, like [`setHTML`](https://developer.mozilla.org/en-US/docs/Web/API/Element/setHTML):
 ```js
-byteOrTextStream.pipeTo(elementOrShadowRoot.streamHTML({santizer}));
-byteOrTextStream.pipeTo(elementOrShadowRoot.streamHTMLUnsafe({santizer}));
+byteOrTextStream.pipeTo(elementOrShadowRoot.streamHTML({sanitizer}));
+byteOrTextStream.pipeTo(elementOrShadowRoot.streamHTMLUnsafe({sanitizer}));
 ```
 
 Also see detailed discussion at https://github.com/whatwg/html/issues/11669, will amend this explainer once that's settled.
